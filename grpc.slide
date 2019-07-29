@@ -1,0 +1,462 @@
+Efficient remote calls with GRPC
+
+Federico Paolinelli
+List
+@fedepaol
+fedepaol@gmail.com
+
+* About me
+
+- Software Architect at List
+- Bringing current technology to distributed systems
+
+Things I tinker with in my spare time:
+
+- Android
+- Python
+
+: Sistemi distribuiti. Cluster di microservices che parlano fra di loro e con entita' esterne
+
+* Distributed systems
+: niche use cases
+: the "latin" of programming languages
+
+
+* Very simple
+
+You have Structs
+.code structs.c
+
+and functions
+.code functions.c
+
+: and that's it.
+
+* Oh, and you have pointers
+.code pointers.c
+Direct access to memory locations. 
+It's only way to pass references around instead of copies.
+
+: l'incubo di ogni studente di informatica
+
+* What I like about C
+- *fast*
+- direct control of things (pointers!)
+- no hidden costs
+- *you*understand*what*you*are*reading*
+
+* What I don't like about C
+- *verbose*
+- easy to shoot on your foot
+- limited standard library
+- dependency management
+
+* The recipe for Go
+
+* The recipe for Go
+
+- Go back to the 70s / 80s and find a bunch of great programmers. Say, Ken Thompson, Rob Pike, people like that. Marinate them in Bell Labs for 30 years, during which time they code in C, keep developing Unix, invent Plan 9, UTF-8, and other wonderful things.
+
+- Take them out, seduce them with Python, wow them with Google-scale computing. Add more amazing programmers (Brad Fitzpatrick for example), stir in Google’s near-unlimited resources.
+
+- Ask them how they would do C now, if they could start from scratch.
+
+.caption _credits_ by [[https://www.darkcoding.net/software/go-lang-after-four-months/][Graham King]]
+
+
+* Can a language be fast and fun to use?
+
+: memory leaks, direct access to memory
+: if you need a data structure, you need to reimplement it or rely on external libraries
+
+.image gograph.png 400 _
+
+* Go's elevator pitch:
+
+- fast (C-ish fast)
+- good at networking and multiprocessing
+- scales well
+- easy to learn
+- comprehensible
+
+* Let's dive in
+
+* Basic data types
+
+As in C, we do have integers, floats, booleans:
+.code basictypes.go
+
+Go provides a higher level _string_ type:
+
+.code strings.go
+
+* Arrays in C:
+.code arrays.c
+
+- length is not a property
+- shortcut for pointer arithmetic (non initialized, out of bound errors write in memory)
+
+*Arrays*in*Go:* 
+.code arrays.go
+
+- Fixed lenght
+- Passed by value
+
+* Slices
+.code slices.go
+
+- Dynamically sized
+- Automatically resized by append
+
+* Maps 
+
+.code maps.go
+
+- no native equivalent in C
+
+* Functions
+
+.code functions.go
+
+- multiple return values (error handling)
+- first class values
+- can be anonymous
+
+.code closure.go
+
+* Memory management
+
+* Memory management in C
+
+- heap vs stack
+.code malloc.c
+
+- efficient
+- the dev is in control of what lives in the stack and what in the heap
+- easy to forget the lifecycle of malloc'ed objects
+
+* Memory management in C
+
+.image heartbleed.png 400 _
+
+* Memory management in Go
+
+There are pointers too, which is good: the dev is in control of what is passed by value and what by reference 
+
+.code pointers.go
+
+- garbage collected
+- pointers are references to live objects: there is no way to mess up with the memory
+: differenza con altri linguaggi dove tutto e` per reference 
+: no boxing
+: using escape analysis, the compiler chooses what to leave on the stack and what on the heap
+
+* But I really really miss pointer arithmetic!
+
+* Unsafe package
+
+The package name is self explanatory.
+It provides Pointers.
+
+- A pointer value of any type can be converted to a Pointer.
+- A Pointer can be converted to a pointer value of any type.
+
+	func Float64bits(f float64) uint64 {
+		return *(*uint64)(unsafe.Pointer(&f))
+	}
+
+- Pointer arithmetic 
+
+	f := unsafe.Pointer(uintptr(unsafe.Pointer(&s)) + unsafe.Offsetof(s.f))
+
+
+* Nice things about GO
+
+* It's safer
+
+Prevents side effects related to distractions 
+
+- assignement between different types requires explicit conversion
+.code casting.c
+- variables are initialized with zero values
+.code initialization.c
+- no pointer arithmetic
+.code pointerarit.c
+
+* Doing more with (a bit) less
+
+- No ; nor () around ifs
+- Type inference, short variable declaration
+.code variable.go
+- Multiple return values (also, named return values)
+.code multiple.go
+
+* Doing more with less
+
+- Range loops (in maps, slices and strings)
+.code ignore.go
+- defer() to call finalizing operations inside a function
+- no break in switch, switch cases can be conditions
+
+* Productivity boost!
+
+Compiling is *really* fast
+
+.image compiling.png
+
+* Let's talk about OOP
+
+* User defined data structures
+C structs:
+.code structs.c
+Go Structs
+.code struct.go
+
+: no inheritance
+: no generics
+: enforce composition through embedding
+
+* Methods
+
+- Just a special kind of functions (they have a receiver)
+- Explicitly associated to objects or pointers
+
+.code methods.go
+
+: can assign methods to any type, even those you don't own
+
+* Interfaces
+
+- Abstract types defining a behaviour
+- Satisfied implicitly 
+
+.code interface.go
+
+- Can be checked
+
+.code interfaceassertion.go
+: you can retro assign an interface to any object
+
+* Encapsulation
+
+.image encapsulation.jpeg _ 400
+
+* Encapsulation in C
+
+static modifier for functions and variables
+
+- Local to a .c file
+- Directly related to exported names available during linking
+
+* Encapsulation in Go:
+
+- The visibility is related to the _package_
+- Multiple files can belong to the same package
+- The visibility is toggled by uppercasing / lowercasing 
+
+
+Every file belongs to a package
+
+	package mypackage
+
+	var Exported int
+	var notExported string
+
+	
+	
+* The worst nightmare of every (C) programmer
+
+
+* 
+
+Knock knock. 
+Race condition. 
+Who's there?
+
+: A bug in multithreading can result in memory corruption with unexpected and unpredictable results. Moreover, it could happen in very rare situations difficult to reproduce with tests.
+: What's more, a wrong usage of the locking primitives can result in a deadlock of two or more threads.
+: *Getting*threading*right*is*difficult*
+
+* pthread.h
+
+Provide primitives to create and synchronize threads together.
+
+- Mutexes
+- Condition variables
+- Semaphores
+
+_Multithreading_is_today's_goto_:_
+- hard to read / understand
+- difficult to debug
+
+What we need is a better solution for concurrency, easier to understand and to handle
+
+* Enters goroutine
+
+Goroutines are lightweight threads managed by the Go runtime.
+
+	go myFunction()
+
+*Why*lighter?*
+
+- smaller (altough variable) stack
+- many goroutines can be share a single os thread
+- scheduling not invoked periodically but as a consequence of synchronization
+
+
+_It_is_practical_to_create_hundreds_of_thousands_of_goroutines_in_the_same_address_space_
+
+
+* Why are they different?
+
+* Channels
+
+A channel is a communication mechanism between two goroutines
+
+	ch := make(chan int)
+
+We can send values to a channel
+
+	ch <- 23
+
+or receive from a channel
+
+	res := <- ch
+
+or just check if send has happened
+
+	<- ch
+
+Channels can be buffered or unbuffered.
+Sending on a full channel blocks the sender, receiving from an empty channel blocks the receiver.
+
+: channels are VALUES
+: origins in csp communicating sequential processes
+
+* Goroutines are indipendent executing actors communicating via channels
+.image concurrency.jpeg
+
+Definetely easier to reason about
+
+* An example
+
+.play goroutine.go
+
+* Where are my mutexes?
+
+* Go provides synchronization primitives
+- Mutexes
+- RW Locks
+- sync.Once
+
+* Everything else
+
+* Coding style
+
+.image spacestabs.png 250 _
+
+.caption Survey by [[https://stackoverflow.blog/2017/06/15/developers-use-spaces-make-money-use-tabs/][stackoverflow]] 
+
+Go fmt formats the code in the "go way"
+
+- easier to read
+- easier to write
+- no tabs vs spaces discussions!
+
+* Building
+
+Workspace: root tree pointed by $GOPATH variable 
+
+	bin/
+	    hello                          # command executable
+	pkg/
+	    linux_amd64/
+		github.com/fedepaol/example/
+		    stringutil.a           # package object
+	src/
+	    github.com/fedepaol/example/
+		hello/
+		    hello.go               # command source
+		    stringutil.go
+	    golang.org/x/image/
+		bmp/
+		    reader.go              # package source
+		    writer.go              # package source
+
+_Most_Go_programmers_keep_all_their_Go_source_code_and_dependencies_in_a_single_workspace_
+
+
+* Building (2)
+
+*go*build* _package_
+
+- non main packages are compiled and thrown away
+- executables are compiled and left in the current dir
+
+*go*install* _package_
+
+- non main packages are deployed in $GOPATH/pkg
+- executables in $GOPATH/bin
+
+*go*get* _package_ (as in github.com/fedepaol/example/hello)
+
+- downloads the package and its dependencies
+- *installs* it
+
+* Deploying
+There is no need for shared libraries. Not even libc.
+
+The go runtime is linked together with the executable. The absence of external dependencies makes the deployement a lot easier than a C executable.
+
+* There's more!
+- reflection
+- race detector
+- C interoperability
+- rich standard library
+- awesome echosystem (https://github.com/avelino/awesome-go)
+- integrated testing framework
+- native cpu and memory profiling
+- cross compiles
+- awesome linters
+
+* What I did expect from Go
+
+* Doing a lot with few lines of code
+
+Javascript
+.code sample.js
+
+Java
+.code sample.java
+
+Kotlin
+.code sample.kt
+
+
+: languages as products. They copy each others and keep adding features
+: Too dense!
+
+* What I found
+Go focuses on
+
+- being explicit rather than implicit
+- being readable
+- being safe
+- getting sh*t done
+
+.image run.png
+
+* Where to go from here
+
+- Official website
+.link http://golang.org
+
+- Interactive Tutorial
+.link http://tour.golang.org
+
+- Effective go
+.link https://golang.org/doc/effective_go.html
+
+- Mailing list
+.link https://groups.google.com/forum/#!forum/golang-nuts
+

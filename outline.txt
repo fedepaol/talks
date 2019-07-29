@@ -1,0 +1,62 @@
+Intro
+
+wikipedia definition
+The need for remote calls
+Sistemi distribuiti all'ordine del giorno. Trend dei microservices
+Communication between backend and frontend (web / mobile)
+
+Communication between 
+
+Alternatives:
+- rest / json over http
+- non e' type safe
+- framed tcp
+- websockets
+
+
+Grpc - born from stubby
+Leverage http2 connection between client and server. Multiple requests / responses can be multiplexed inside the same tcp connection
+
+How does it work
+
+How does it compare with rest
+type safe, binary, faster
+server and client code generated for more than xx languages
+swagger is not type safe
+
+
+Talk is cheap, show me the code
+
+How to setup
+
+How to define a service
+Protobuf
+What it is
+- binary format
+- strongly typed
+- versioned
+
+How does it compare to rest
+
+grpc and go
+
+Chiamate remote
+Streaming
+
+Backward compatibility 
+Intermediate services do not need to be updated
+
+Service discovery
+Example using etcd
+
+Authorization
+
+Context - deadline / cancelation propagation
+
+Circuit breaker
+
+Interceptors
+
+Sample with jaeger
+
+Questions
