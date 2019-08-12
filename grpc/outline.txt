@@ -49,7 +49,11 @@ Intermediate services do not need to be updated
 Service discovery
 Example using etcd
 
+JSon interoperability
+
 Authorization
+
+Load balancing
 
 Context - deadline / cancelation propagation
 
@@ -58,5 +62,7 @@ Circuit breaker
 Interceptors
 
 Sample with jaeger
+
+Error returning
 
 Questions
