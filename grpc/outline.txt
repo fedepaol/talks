@@ -46,6 +46,8 @@ Streaming
 Backward compatibility 
 Intermediate services do not need to be updated
 
+Error codes (see https://jbrandhorst.com/post/grpc-errors/)
+
 Service discovery
 Example using etcd
 
@@ -66,3 +68,7 @@ Sample with jaeger
 Error returning
 
 Questions
+
+
+Material:
+https://github.com/gogo/protobuf

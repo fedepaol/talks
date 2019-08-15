@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-service Beers {
+service BeersService {
     rpc GetBeer(BeerID) returns (Beer);
     rpc QueryBeer(BeerQueryParams) returns (stream Beer);
 }
@@ -14,27 +14,10 @@ message BeerQueryParams {
 }
 
 message Beer {
-  
-  string beer_name = 1;
-  string beer_label = 2;
-  double beer_abv = 3;
-  int32 beer_ibu = 4;
-  string beer_description = 5;
-  string created_at = 6;
-  string beer_style = 7;
-  int32 auth_rating = 8;
-  bool wish_list = 9;
-  int32 in_production = 10;
-  int32 bid = 11;
-  
-  message Stats {
-    int32 monthly_count = 1;
-    int32 total_user_count = 2;
-    int32 user_count = 3;
-    int32 total_count = 4;  
-  } 
-
-  Stats stats = 13;
+  int32 bid = 1;
+  string beer_name = 2;
+  string beer_description = 3;
+  string beer_style = 4;
 }
 
 message BeerResult {

@@ -49,18 +49,18 @@ fpaoline@redhat.com
 
 *Types*definition*
 
-    message Person {
-        required string name = 1;
-        required int32 id = 2;
-        optional string email = 3;
+    message Beer {
+        int32 bid = 1;
+        string beer_name = 2;
+        string beer_description = 3;
+        string beer_style = 4;
     }
 
 *Services*definition*
 
-    service HelloService {
-        rpc SayHello (HelloRequest) returns (HelloResponse);
-        rpc LotsOfReplies(HelloRequest) returns (stream HelloResponse);
-        rpc LotsOfGreetings(stream HelloRequest) returns (HelloResponse);
+    service BeersService {
+        rpc GetBeer(BeerID) returns (Beer);
+        rpc QueryBeer(BeerQueryParams) returns (stream Beer);
     }
 
 
@@ -71,3 +71,30 @@ fpaoline@redhat.com
 : propagate the data
 : sync call, streamed result, streamed in
 
+* Server side
+
+    type BeersServiceServer interface {
+        GetBeer(context.Context, *BeerID) (*Beer, error)
+        QueryBeer(*BeerQueryParams, BeersService_QueryBeerServer) error
+    }
+
+*Client*side*
+    
+    // Generated code
+    func NewBeersServiceClient(cc *grpc.ClientConn) BeersServiceClient
+    func (c *beersServiceClient) GetBeer(ctx context.Context, in *BeerID, opts ...grpc.CallOption) (*Beer, error)
+
+* Server implementation
+
+    func (b *BeerServer) GetBeer(ctx context.Context, id *beer.BeerID) (*beer.Beer, error) {
+        beerID := id.GetBid()
+        beer, ok := b.beers[int(beerID)]
+        if !ok {
+            // from google.golang.org/grpc/status
+            return nil, status.Error(codes.NotFound, "beer not found")
+        }
+        return &beer, nil
+    }
+
+: convenience method to avoid npes
+: grpc comes with a grpc/status package to provide rich errors
