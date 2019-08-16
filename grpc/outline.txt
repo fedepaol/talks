@@ -25,8 +25,6 @@ server and client code generated for more than xx languages
 swagger is not type safe
 
 
-Talk is cheap, show me the code
-
 How to setup
 
 How to define a service
@@ -38,37 +36,50 @@ What it is
 
 How does it compare to rest
 
+
 grpc and go
+
+Protobufs: 
+
+Example
 
 Chiamate remote
 Streaming
+Error returning
 
+Mention:
 Backward compatibility 
 Intermediate services do not need to be updated
 
-Error codes (see https://jbrandhorst.com/post/grpc-errors/)
 
-Service discovery
+
+Metadata usage
+
+
+Load balancing & Service discovery
 Example using etcd
+
+Context - deadline / cancelation propagation
 
 JSon interoperability
 
 Authorization
 
-Load balancing
-
-Context - deadline / cancelation propagation
-
 Circuit breaker
 
 Interceptors
 
+Tracing
+
+Monitoring
+
 Sample with jaeger
 
-Error returning
 
 Questions
 
 
 Material:
 https://github.com/gogo/protobuf
+
+keep alive

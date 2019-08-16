@@ -28,8 +28,10 @@ fpaoline@redhat.com
 
 * The need for communication
 
-- Inter microservices
-- Frontend / backend
+.image images/mailboxes.jpg 400 _
+: TODO Creative commons
+: not only Frontend / backend
+: due to the complexity of our systems we need the appropriate tools. Go beyond simple remote invokation
 
 * What options do I have?
 
@@ -44,6 +46,21 @@ fpaoline@redhat.com
 * Enters Grpc
 : stands for Grpc remote procedure calls
 : iteration of google's stubby, then opensourced
+
+* Grpc & http2
+
+Http2 allows multiplexing of requests over a single tcp connection (streams)
+
+Grpc introduces channels, rpcs and messages:
+
+.image images/grpc_on_http2_mapping_2.png 400 _
+
+: Many streams on a single connection. On each stream, many messages (binary format)
+: Advantage of a stream -> connection concurrency. Interleave messages on a single connection
+: in go channel renamed to client conn
+: channels enable multiple streams over multiple http2 connections (if load balance api is used)
+
+* Serialization
 
 * Protocol Buffers
 
@@ -66,10 +83,15 @@ fpaoline@redhat.com
 
 : Default serialization mechanism for Grpc
 : Run the protoc compiler and get data classes + serialization / deserialization
-: New fields can be added without breaking retro compatibility
-: if we have a router service that needs to propagate the data, can parse only the fields it knows and
-: propagate the data
 : sync call, streamed result, streamed in
+: code generation for a lot of languages, interoperability
+
+* Protobufs favour backward compatibility
+
+- New fields can be added without breaking retro compatibility
+- Intermediate service can parse the data, check what they need and propagate the data again
+
+: be careful in setting the default values 
 
 * Server side
 
@@ -98,3 +120,58 @@ fpaoline@redhat.com
 
 : convenience method to avoid npes
 : grpc comes with a grpc/status package to provide rich errors
+
+* Server implementation (streaming)
+
+    func (b *BeerServer) QueryBeer(p *beer.BeerQueryParams, 
+                                   s beer.BeersService_QueryBeerServer) error {
+        for _, b := range b.beers {
+            if strings.Contains(b.BeerDescription, p.GetQuery()) {
+                s.Send(&b)
+            }
+        }
+        return nil
+    }
+
+* Establishing a connection
+
+Client side:
+
+    conn, _ := grpc.Dial(serverAddr, grpc.WithInsecure())
+    client := beer.NewBeersServiceClient(conn)
+       
+Server side:
+
+    server := grpc.NewServer()
+    beer.RegisterBeersServiceServer(server, &BeerServer{})
+	
+: Note that a connection can be in idle state, meaning that no rpc is invoked (or idle timeout has passed)
+: a client connection can be used by many goroutines, all the gprc happen on separate goroutines
+: there is also tls support 
+
+* Grpc context gets propagated
+
+Deadline:
+
+    ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+	beer, err := client.GetBeer(ctx, id)
+
+: with timeout sets a deadline in the future.
+: if the same context gets propagated the calls will expire without wasting resources.
+
+
+Cancellation
+
+* Metadata usage
+
+* Interceptors
+
+* Authentication
+
+* Tracing
+
+* Monitoring
+
+* Keep alive
+
+* Json interoperability (grpc gateway?)
