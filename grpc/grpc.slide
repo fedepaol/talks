@@ -36,9 +36,9 @@ fpaoline@redhat.com
 * What options do I have?
 
 - rest
+- other rpcs (thrift, avro)
 - websockets
 - framed tcp
-- other rpcs (thrift, avro)
 : rest is the king here. Not type safe. I know there are tools to generate the client /server but still
 : websockets is not really a standard
 : framed tcp: NIH syndrome
@@ -149,18 +149,45 @@ Server side:
 : a client connection can be used by many goroutines, all the gprc happen on separate goroutines
 : there is also tls support 
 
-* Grpc context gets propagated
+* Keep alive
 
-Deadline:
+* Grpc Context gets propagated
+
+* Deadline propagation
 
     ctx, cancel := context.WithTimeout(context.Background(), time.Second)
-	beer, err := client.GetBeer(ctx, id)
+    beer, err := client.GetBeer(ctx, id)
 
+.image images/propagation.png 200 _
+    
+    func (b *IntermediateServer) GetBeer(ctx context.Context, id *beer.BeerID) (*beer.Beer, error) {
+        if ctx.Err() == context.Canceled {
+            return status.New(codes.Canceled, "Client cancelled, abandoning.")
+        }
+        b.client.GetBeer(ctx, id)
+    }
+
+
+: deadline sets a point in time, the same for all the calls
 : with timeout sets a deadline in the future.
 : if the same context gets propagated the calls will expire without wasting resources.
+: the server can check if the client is still interested before wasting resources. Can decide to proceed, if the request is cached 
+: and idempotency is implemented
+
+* Cancellation
+
+    ctx, cancel := context.WithCancel(context.Background())
+    done := make(chan bool, 0)
+    go func() {
+        client.GetBeer(ctx, id)
+        close(done)
+    }()
+    cancel()
+
+.image images/cancellation.png 200 _
 
 
-Cancellation
+: cancellation gets propagated through te calls
 
 * Metadata usage
 
@@ -172,6 +199,5 @@ Cancellation
 
 * Monitoring
 
-* Keep alive
 
 * Json interoperability (grpc gateway?)
