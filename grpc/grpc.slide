@@ -11,7 +11,7 @@ fpaoline@redhat.com
 - Red Hatter
 - Doing distributed systems for more than 15 years
 - CNV Networking team -> KubeVirt
-- Open source enthusiast
+- Open source lover
 
 * Let's talk about RPC
 
@@ -24,7 +24,7 @@ fpaoline@redhat.com
 
 :  allow function callers and function implementers to live in different processes
 : the client and the server in an RPC exchange must be up and running at the same time.
-: language indpendent definition of the Rpc
+: language indpendent definition of the Rpc -> IDL Interface domain language
 
 * The need for communication
 
@@ -151,6 +151,20 @@ Server side:
 
 * Keep alive
 
+Not enabled by default, must use [[google.golang.org/grpc/keepalive]]
+
+- Useful to detect disconnections where the endpoint hangs or dies
+- Relies on http2 ping frames
+
+Nice side effects:
+
+- Keeps a pool of connections healthy
+- Avoids killing idle of connections
+
+: Tbh a really forgiving server side keep alive is enabled by default
+: Needs to be enabled
+: Some proxies kill connections where no traffic is passing
+
 * Grpc Context gets propagated
 
 * Deadline propagation
@@ -189,7 +203,21 @@ Server side:
 
 : cancellation gets propagated through te calls
 
-* Metadata usage
+* Metadata
+
+Regular context values are not propagated.
+
+[[google.golang.org/grpc/metadata]] is.
+
+Client:
+
+    metaData := metadata.Pairs("key", "value")
+    ctx := metadata.NewContext(context.Background(), metaData)
+
+Server:
+
+    meta, ok := metadata.FromContext(ctx)
+    value : = meta["key"][0]
 
 * Interceptors
 
