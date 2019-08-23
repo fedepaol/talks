@@ -141,10 +141,11 @@ Client side:
     client := beer.NewBeersServiceClient(conn)
        
 Server side:
-
+    lis, _ := net.Listen("tcp", port)
     server := grpc.NewServer()
     beer.RegisterBeersServiceServer(server, &BeerServer{})
-	
+	server.Serve(lis)
+
 : Note that a connection can be in idle state, meaning that no rpc is invoked (or idle timeout has passed)
 : a client connection can be used by many goroutines, all the gprc happen on separate goroutines
 : there is also tls support 
@@ -174,7 +175,7 @@ Nice side effects:
 
 .image images/propagation.png 200 _
     
-    func (b *IntermediateServer) GetBeer(ctx context.Context, id *beer.BeerID) (*beer.Beer, error) {
+    func (b *MiddleServer) GetBeer(ctx context.Context, id *beer.BeerID) (*beer.Beer, error) {
         if ctx.Err() == context.Canceled {
             return status.New(codes.Canceled, "Client cancelled, abandoning.")
         }
@@ -219,7 +220,22 @@ Server:
     meta, ok := metadata.FromContext(ctx)
     value : = meta["key"][0]
 
+: If it's business logic the api should be changed.
+: metadata should carry only "infrastructure" payload
+
+
 * Interceptors
+
+Same as http middleware.
+
+Two types:
+
+- Unary Interceptors
+- Stream Interceptors
+
+: can apply to server side and client side. Http generally intercept server side
+
+* Sample with retries
 
 * Authentication
 
