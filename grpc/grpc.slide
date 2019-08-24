@@ -233,9 +233,42 @@ Two types:
 - Unary Interceptors
 - Stream Interceptors
 
-: can apply to server side and client side. Http generally intercept server side
+Client side & Server side
 
-* Sample with retries
+: I won't add the signature here since it's quite long
+: can apply to server side and client side. Http generally intercept server side
+: client unary. Pre processing, call, post processing
+: client streaming. Pre processing, retrieve the stream, optionally decorate it with interceptior methods, return decorated stream
+: server side is almost the same but instead of invoker you have a handler to pass the data / the stream
+
+* Retry unary interceptor
+
+    func RetryInterceptor(ctx context.Context, 
+                          method string, 
+                          req, reply interface{}, 
+                          cc *grpc.ClientConn, 
+                          invoker grpc.UnaryInvoker, 
+                          opts ...grpc.CallOption) error {
+        var lastErr error
+        for attempt := uint(0); attempt < 10; attempt++ {
+            lastErr = invoker(ctx, method, req, reply, cc, opts...)
+            if lastErr == nil {
+                return nil
+            }
+        }
+        return lastErr
+    }
+
+: three phases. The actual call happens in invoker
+
+* Rate limiter interceptor
+
+    func UnaryServerInterceptor(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
+		if Limit() {
+			return nil, status.Errorf(codes.ResourceExhausted, "%s is rejected by grpc_ratelimit middleare, please retry later.", info.FullMethod)
+		}
+		return handler(ctx, req)
+    }
 
 * Authentication
 
