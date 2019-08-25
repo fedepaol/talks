@@ -30,6 +30,7 @@ fpaoline@redhat.com
 
 .image images/mailboxes.jpg 400 _
 : TODO Creative commons
+: demand for interoperability. Mobile also introduced need for efficiency
 : not only Frontend / backend
 : due to the complexity of our systems we need the appropriate tools. Go beyond simple remote invokation
 
@@ -222,7 +223,7 @@ Server:
 
 : If it's business logic the api should be changed.
 : metadata should carry only "infrastructure" payload
-
+: no static checks, no code generated. To handle with care.
 
 * Interceptors
 
@@ -233,13 +234,34 @@ Two types:
 - Unary Interceptors
 - Stream Interceptors
 
-Client side & Server side
+Both Client side / server side
 
 : I won't add the signature here since it's quite long
 : can apply to server side and client side. Http generally intercept server side
 : client unary. Pre processing, call, post processing
 : client streaming. Pre processing, retrieve the stream, optionally decorate it with interceptior methods, return decorated stream
 : server side is almost the same but instead of invoker you have a handler to pass the data / the stream
+
+* Interceptors
+
+To apply:
+
+Client:
+
+    conn, err := grpc.Dial(*addr, grpc.WithUnaryInterceptor(unaryInterceptor))
+
+Server:
+
+    s := grpc.NewServer(grpc.UnaryInterceptor(unaryInterceptor))
+
+If we want more interceptors (client side):
+
+    func WithChainUnaryInterceptor(interceptors ...UnaryClientInterceptor) DialOption
+
+Server side not natively supported. Must use [[github.com/grpc-ecosystem/go-grpc-middleware]].
+
+: they are per conn / per server. this means that all the calls on that conn will attemtp a retry, or 
+: authenticate. If we want special cases, we need to handle them in our code. 
 
 * Retry unary interceptor
 
@@ -260,6 +282,10 @@ Client side & Server side
     }
 
 : three phases. The actual call happens in invoker
+: more real scenario. Only some errors are worth being retried (the other end needs to be idempotent. Think about about
+: a payement service that is not idempotent.) Also, not all the calls can be idempotent. The caller needs to tell the info
+: to the interceptor. Logic on method name, arguments passed in the context (the real context) or as metadata.
+
 
 * Rate limiter interceptor
 
@@ -269,6 +295,7 @@ Client side & Server side
 		}
 		return handler(ctx, req)
     }
+
 
 * Authentication
 
