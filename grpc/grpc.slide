@@ -142,10 +142,11 @@ Client side:
     client := beer.NewBeersServiceClient(conn)
        
 Server side:
+
     lis, _ := net.Listen("tcp", port)
     server := grpc.NewServer()
     beer.RegisterBeersServiceServer(server, &BeerServer{})
-	server.Serve(lis)
+    server.Serve(lis)
 
 : Note that a connection can be in idle state, meaning that no rpc is invoked (or idle timeout has passed)
 : a client connection can be used by many goroutines, all the gprc happen on separate goroutines
@@ -290,10 +291,10 @@ Server side not natively supported. Must use [[github.com/grpc-ecosystem/go-grpc
 * Rate limiter interceptor
 
     func UnaryServerInterceptor(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
-		if Limit() {
-			return nil, status.Errorf(codes.ResourceExhausted, "%s is rejected by grpc_ratelimit middleare, please retry later.", info.FullMethod)
-		}
-		return handler(ctx, req)
+        if Limit() {
+            return nil, status.Errorf(codes.ResourceExhausted, "%s is rejected by grpc_ratelimit middleare, please retry later.", info.FullMethod)
+        }
+        return handler(ctx, req)
     }
 
 
