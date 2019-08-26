@@ -298,6 +298,8 @@ Server side not natively supported. Must use [[github.com/grpc-ecosystem/go-grpc
     }
 
 
+* Load balancing
+
 * Authentication
 
 * Tracing
