@@ -297,8 +297,51 @@ Server side not natively supported. Must use [[github.com/grpc-ecosystem/go-grpc
         return handler(ctx, req)
     }
 
+* Name resolving
+
+
+This is done by [[https://godoc.org/google.golang.org/grpc/resolver#Resolver][Resolver]]
+
+You have a name (URI) for the server, and want one (or more) addresses back.
+
+Available off the box:
+
+- dns
+- passthrough
+- manual
+
+passthrough:///localhost:50051
+
+You can create your own.
+
+The address type can be backend or grpclb
+
+
+: the resolver is an object that gets instantiated, belongs to a given schema (i.e. dns), and
+: returns a list of addresses (and address types)
 
 * Load balancing
+
+Problem: grpc is based on http/2. The pillar is maintaining a persistent connection.
+How do you load balance that?
+
+(http/1 has the same concept but more limited. Only one request per connection)
+
+Client side load balancing: the client needs to know about the load of each backend and implement a balancing policy.
+External load balancer: load balancing implemented in an external lb server.
+Clients query the lb server. 
+
+Load balancing is done per call. Each call can end to different server.
+
+External balancing: an external balancer provides a list of servers
+Grpc has an api for built in load balancing
+
+Two components:
+- name resolver
+- load balancing policy
+
+First step:
+resolve the server name into a list of 
 
 * Authentication
 
