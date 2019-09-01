@@ -299,10 +299,9 @@ Server side not natively supported. Must use [[github.com/grpc-ecosystem/go-grpc
 
 * Name resolving
 
-
-This is done by [[https://godoc.org/google.golang.org/grpc/resolver#Resolver][Resolver]]
-
 You have a name (URI) for the server, and want one (or more) addresses back.
+
+Enters [[https://godoc.org/google.golang.org/grpc/resolver#Resolver][Resolver]]
 
 Available off the box:
 
@@ -310,38 +309,51 @@ Available off the box:
 - passthrough
 - manual
 
-passthrough:///localhost:50051
-
-You can create your own.
-
-The address type can be backend or grpclb
-
+    passthrough:///localhost:50051
 
 : the resolver is an object that gets instantiated, belongs to a given schema (i.e. dns), and
 : returns a list of addresses (and address types)
+: segway: The address type can be backend or grpclb
+
+* TODO Show example of resolver?
 
 * Load balancing
 
-Problem: grpc is based on http/2. The pillar is maintaining a persistent connection.
-How do you load balance that?
-
-(http/1 has the same concept but more limited. Only one request per connection)
-
-Client side load balancing: the client needs to know about the load of each backend and implement a balancing policy.
-External load balancer: load balancing implemented in an external lb server.
-Clients query the lb server. 
-
 Load balancing is done per call. Each call can end to different server.
 
-External balancing: an external balancer provides a list of servers
-Grpc has an api for built in load balancing
+How do we balance the load?
 
-Two components:
-- name resolver
-- load balancing policy
+- Proxy
+- Client side
+- Client side with lookaside
 
-First step:
-resolve the server name into a list of 
+Built in balancing strategies (pick first, round_robin, grpclb)
+
+: So you have a list of url, and you have to decide which one to invoke.
+: Problem: grpc is based on http/2. The pillar is maintaining a persistent connection.
+
+* External Load Balancing
+
+.image images/load-balancing.png 400 _
+
+: You may not want to track the load of the servers, if they are alive and such.
+: Separate responsabilities. Have an external service that do that.
+: If the name resolution returns at least one load balancer address, the client switches to grpclb, delegating the balancing to an external service.
+
+* External Load Balancing
+
+The balancer is a Grpc endpoint itself:
+
+    service LoadBalancer {
+        // Bidirectional rpc to get a list of servers.
+        rpc BalanceLoad(stream LoadBalanceRequest) returns (stream LoadBalanceResponse);
+    }
+
+TODO: https://github.com/grpc/grpc/blob/master/doc/load-balancing.md
+
+: Note that it is a stream. The list may vary and get updated over time and also the requests
+: The servers may want to communicate.
+: The list is the order in which the calls must hit the servers.
 
 * Authentication
 
