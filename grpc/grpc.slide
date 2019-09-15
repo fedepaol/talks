@@ -83,9 +83,12 @@ Grpc introduces channels, rpcs and messages:
 
 
 : Default serialization mechanism for Grpc
+: Binary serialization protocol
 : Run the protoc compiler and get data classes + serialization / deserialization
 : sync call, streamed result, streamed in
 : code generation for a lot of languages, interoperability
+: two parts: types & endpoints
+: there is a way to marshal from / to json. Useful for debugging
 
 * Protobufs favour backward compatibility
 
@@ -94,45 +97,7 @@ Grpc introduces channels, rpcs and messages:
 
 : be careful in setting the default values 
 
-* Server side
-
-    type BeersServiceServer interface {
-        GetBeer(context.Context, *BeerID) (*Beer, error)
-        QueryBeer(*BeerQueryParams, BeersService_QueryBeerServer) error
-    }
-
-*Client*side*
-    
-    // Generated code
-    func NewBeersServiceClient(cc *grpc.ClientConn) BeersServiceClient
-    func (c *beersServiceClient) GetBeer(ctx context.Context, in *BeerID, opts ...grpc.CallOption) (*Beer, error)
-
-* Server implementation
-
-    func (b *BeerServer) GetBeer(ctx context.Context, id *beer.BeerID) (*beer.Beer, error) {
-        beerID := id.GetBid()
-        beer, ok := b.beers[int(beerID)]
-        if !ok {
-            // from google.golang.org/grpc/status
-            return nil, status.Error(codes.NotFound, "beer not found")
-        }
-        return &beer, nil
-    }
-
-: convenience method to avoid npes
-: grpc comes with a grpc/status package to provide rich errors
-
-* Server implementation (streaming)
-
-    func (b *BeerServer) QueryBeer(p *beer.BeerQueryParams, 
-                                   s beer.BeersService_QueryBeerServer) error {
-        for _, b := range b.beers {
-            if strings.Contains(b.BeerDescription, p.GetQuery()) {
-                s.Send(&b)
-            }
-        }
-        return nil
-    }
+* protoc beer.proto --go_out=plugins=grpc:pkg/beer
 
 * Establishing a connection
 
@@ -167,6 +132,82 @@ Nice side effects:
 : Tbh a really forgiving server side keep alive is enabled by default
 : Needs to be enabled
 : Some proxies kill connections where no traffic is passing
+
+* Server side
+
+    type BeersServiceServer interface {
+        GetBeer(context.Context, *BeerID) (*Beer, error)
+        QueryBeer(*BeerQueryParams, BeersService_QueryBeerServer) error
+    }
+
+*Client*side*
+    
+    // Generated code
+    func NewBeersServiceClient(cc *grpc.ClientConn) BeersServiceClient
+    func (c *beersServiceClient) GetBeer(ctx context.Context, 
+                                         in *BeerID, 
+                                         opts ...grpc.CallOption) (*Beer, error)
+
+* Server implementation
+
+    func (b *BeerServer) GetBeer(ctx context.Context, id *beer.BeerID) (*beer.Beer, error) {
+        beerID := id.GetBid()
+        beer, ok := b.beers[int(beerID)]
+        if !ok {
+            // from google.golang.org/grpc/status
+            return nil, status.Error(codes.NotFound, "beer not found")
+        }
+        return &beer, nil
+    }
+
+: convenience method to avoid npes
+: grpc comes with a grpc/status package to provide rich errors
+
+* Server implementation (streaming)
+
+    func (b *BeerServer) QueryBeer(p *beer.BeerQueryParams, 
+                                   s beer.BeersService_QueryBeerServer) error {
+        for _, b := range b.beers {
+            if strings.Contains(b.BeerDescription, p.GetQuery()) {
+                s.Send(&b)
+            }
+        }
+        return nil
+    }
+
+* Error Handling
+
+    func (b *BeerServer) GetBeer(ctx context.Context, id *beer.BeerID) (*beer.Beer, error) {
+        /* ... */
+        return nil, fmt.Error("Failed to get a beer")
+    }
+
+On the client side:
+
+    beer, err := client.GetBeer(ctx, id)
+    if err != nil && err.Error() == "Failed to get a beer" {
+        // handle missing beer
+    }
+
+* Error Handling
+
+    func (b *BeerServer) GetBeer(ctx context.Context, id *beer.BeerID) (*beer.Beer, error) {
+        /* ... */
+        return nil, status.Error(codes.NotFound, "beer not found")
+    }
+
+On the client side:
+
+    beer, err := client.GetBeer(ctx, id)
+    st, ok := status.FromError(err)
+    if err != nil {
+        st, ok := status.FromError(err)
+        if ok && st.Code() == codes.NotFound && st.Message() == "beer not found" {
+            // handle missing beer
+        }
+    }
+: grpc comes with a grpc/status package to provide rich errors
+
 
 * Grpc Context gets propagated
 
@@ -262,7 +303,8 @@ If we want more interceptors (client side):
 Server side not natively supported. Must use [[github.com/grpc-ecosystem/go-grpc-middleware]].
 
 : they are per conn / per server. this means that all the calls on that conn will attemtp a retry, or 
-: authenticate. If we want special cases, we need to handle them in our code. 
+: authenticate. If we want special cases, we need to handle them in our code. One way to deal with it is
+: to use context values 
 
 * Retry unary interceptor
 
@@ -290,9 +332,13 @@ Server side not natively supported. Must use [[github.com/grpc-ecosystem/go-grpc
 
 * Rate limiter interceptor
 
-    func UnaryServerInterceptor(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
+    func UnaryServerInterceptor(ctx context.Context, 
+                                req interface{}, 
+                                info *grpc.UnaryServerInfo, 
+                                handler grpc.UnaryHandler) (interface{}, error) {
         if Limit() {
-            return nil, status.Errorf(codes.ResourceExhausted, "%s is rejected by grpc_ratelimit middleare, please retry later.", info.FullMethod)
+            return nil, status.Errorf(codes.ResourceExhausted, 
+                                     "%s is rejected by retry limiter.", info.FullMethod)
         }
         return handler(ctx, req)
     }

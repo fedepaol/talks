@@ -32,3 +32,14 @@ message BeerResult {
       repeated Beer items = 2;
   }
 }
+
+enum BeerErrorCode {
+  UNKNOWN = 0;
+  INVALID_BEER = 1;
+  BEER_NOT_FOUND = 2;
+}
+
+message BeerError {
+  BeerErrorCode reason = 1;
+  string message = 2;
+}
