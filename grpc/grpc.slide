@@ -95,6 +95,7 @@ Grpc introduces channels, rpcs and messages:
 - New fields can be added without breaking retro compatibility
 - Intermediate service can parse the data, check what they need and propagate the data again
 
+: Protobuf has a list of safe changes,what happens if a type gets converted in another type.
 : be careful in setting the default values 
 
 * protoc beer.proto --go_out=plugins=grpc:pkg/beer
@@ -199,14 +200,44 @@ On the client side:
 On the client side:
 
     beer, err := client.GetBeer(ctx, id)
-    st, ok := status.FromError(err)
     if err != nil {
-        st, ok := status.FromError(err)
-        if ok && st.Code() == codes.NotFound && st.Message() == "beer not found" {
+        st := status.Convert(err)
+        if st != nil && st.Code() == codes.NotFound && st.Message() == "beer not found" {
             // handle missing beer
         }
     }
 : grpc comes with a grpc/status package to provide rich errors
+
+* Error Handling
+
+    func (b *BeerServer) GetBeer(ctx context.Context, id *beer.BeerID) (*beer.Beer, error) {
+        /* ... */
+        beerErr := beer.BeerError {
+            reason: BeerErrorCode_BEER_NOT_FOUND,
+            message: fmt.Sprintf("Could not find beer %v, *id)
+        }
+        st, _ := status.New(codes.NotFound, "not found").WithDetails(beerErr)
+
+        return nil, st.Err()
+    }
+
+On the client side:
+
+    beer, err := client.GetBeer(ctx, id)
+    if err != nil {
+        st := status.Convert(err)
+        for _, detail := range st.Details() {
+            switch t := detail.(type) {
+                case *beer.BeerError:
+                    // handle t payload
+                default:
+                    // handle default
+            }
+        }
+    }
+
+: Type safe error. We know that the protobuf is shared between the client and the server so it's a more convenient
+: way to handle errors
 
 
 * Grpc Context gets propagated
