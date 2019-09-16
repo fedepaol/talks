@@ -374,7 +374,59 @@ Server side not natively supported. Must use [[github.com/grpc-ecosystem/go-grpc
         return handler(ctx, req)
     }
 
-* Name resolving
+* Authentication (Client Side)
+
+    func jwtInterceptor(token string) (UnaryClientInterceptor, err) {
+        return func(ctx context.Context, 
+                            method string,
+                            req interface{},
+                            reply interface{},
+                            cc *grpc.ClientConn,
+                            invoker grpc.UnaryInvoker,
+                            opts ...grpc.CallOption) error {
+
+            authCtx := metadata.AppendToOutgoingContext(ctx, "jwt", "bearer "+jwt.token)
+            err := invoker(authCtx, method, req, reply, cc, opts...)
+            if err != nil && status.Code(err) == codes.Unauthenticated {
+                // handle unauthenticated
+            }
+            if err != nil {
+                return err
+            }
+        }
+    }
+
+: we can leverage the interceptor to handle jwt tokens sending and validation
+: this provides no way to refresh the token. Smarter ways:
+: set the context metadata on per call basis
+: have a struct bound to the interceptor
+
+* Authentication (Server Side)
+
+    func authInterceptor(ctx context.Context, 
+                        req interface{}, 
+                        _ *grpc.UnaryServerInfo, 
+                        handler grpc.UnaryHandler) (interface{}, error) {
+        meta, ok := metadata.FromIncomingContext(ctx)
+        if !ok {
+            return nil, status.Error(codes.Unauthenticated, "INTERNAL_SERVER_ERROR")
+        }
+        if len(meta["jwt"]) != 1 {
+            return nil, status.Error(codes.Unauthenticated, "INTERNAL_SERVER_ERROR")
+        }
+        token := meta["jwt"][0]
+        // handle token validation
+        return handler(ctx, req)
+    }
+
+
+
+* Service discovery & load balancing
+
+: Until now we saw we point the server using an address and a port. Very like what we do with 
+: rest. Grpc offers more sophisticated ways to fetch the endpoints
+
+* Name resolution
 
 You have a name (URI) for the server, and want one (or more) addresses back.
 
@@ -407,6 +459,7 @@ How do we balance the load?
 Built in balancing strategies (pick first, round_robin, grpclb)
 
 : So you have a list of url, and you have to decide which one to invoke.
+: The client opens a subchannel for each url
 : Problem: grpc is based on http/2. The pillar is maintaining a persistent connection.
 
 * External Load Balancing
@@ -426,13 +479,9 @@ The balancer is a Grpc endpoint itself:
         rpc BalanceLoad(stream LoadBalanceRequest) returns (stream LoadBalanceResponse);
     }
 
-TODO: https://github.com/grpc/grpc/blob/master/doc/load-balancing.md
-
 : Note that it is a stream. The list may vary and get updated over time and also the requests
 : The servers may want to communicate.
 : The list is the order in which the calls must hit the servers.
-
-* Authentication
 
 * Tracing
 
