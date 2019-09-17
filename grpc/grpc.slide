@@ -178,6 +178,8 @@ Nice side effects:
 
 * Error Handling
 
+* Error Handling
+
     func (b *BeerServer) GetBeer(ctx context.Context, id *beer.BeerID) (*beer.Beer, error) {
         /* ... */
         return nil, fmt.Error("Failed to get a beer")
@@ -217,7 +219,6 @@ On the client side:
             message: fmt.Sprintf("Could not find beer %v, *id)
         }
         st, _ := status.New(codes.NotFound, "not found").WithDetails(beerErr)
-
         return nil, st.Err()
     }
 
@@ -230,8 +231,6 @@ On the client side:
             switch t := detail.(type) {
                 case *beer.BeerError:
                     // handle t payload
-                default:
-                    // handle default
             }
         }
     }
@@ -274,7 +273,6 @@ On the client side:
     cancel()
 
 .image images/cancellation.png 200 _
-
 
 : cancellation gets propagated through te calls
 
@@ -419,7 +417,13 @@ Server side not natively supported. Must use [[github.com/grpc-ecosystem/go-grpc
         return handler(ctx, req)
     }
 
+* Interceptors pitfall
 
+- once set, the interceptor are triggered for all the methods
+- need to find a way to disable (some) interceptors on per method basis
+
+: there are some methods that might not need authenticatoin
+: there are some methods that are not idempotent (and for that reason you don't want to retry)
 
 * Service discovery & load balancing
 
@@ -430,7 +434,7 @@ Server side not natively supported. Must use [[github.com/grpc-ecosystem/go-grpc
 
 You have a name (URI) for the server, and want one (or more) addresses back.
 
-Enters [[https://godoc.org/google.golang.org/grpc/resolver#Resolver][Resolver]]
+Enters [[https://godoc.org/google.golang.org/grpc/resolver#Resolver][resolver.Resolver]]
 
 Available off the box:
 
@@ -440,11 +444,31 @@ Available off the box:
 
     passthrough:///localhost:50051
 
+: normally it's dns, pick first. That's why you don't notice it
 : the resolver is an object that gets instantiated, belongs to a given schema (i.e. dns), and
 : returns a list of addresses (and address types)
 : segway: The address type can be backend or grpclb
 
-* TODO Show example of resolver?
+* Build your own resolver
+
+We need to register a [[https://godoc.org/google.golang.org/grpc/resolver#Builder][resolver.Builder]]
+
+- Build() method to return the resolver for the given target
+- Scheme() method to declare the scheme we are registering against
+
+
+Then update the  client connection has a method for updating 
+    
+    cc.UpdateState(resolver.State{Addresses: addrs})
+
+Nice example: [[https://etcd.io/docs/v3.2.17/dev-guide/grpc_naming/][etcd name resolver]]
+
+:   Two options for registering it:
+:   	resolver.Register(&exampleResolverBuilder{}) register the resolver, it will use the schema
+:   or instantiate and pass to dial method
+:   b := grpc.RoundRobin(r)
+:   conn, gerr := grpc.Dial("my-service", grpc.WithBalancer(b))
+
 
 * Load balancing
 
@@ -483,10 +507,13 @@ The balancer is a Grpc endpoint itself:
 : The servers may want to communicate.
 : The list is the order in which the calls must hit the servers.
 
-* Tracing
+* Other interceptor goodies
 
-* Monitoring
+- Tracing (with opentracing)
+- Logging
+- Monitoring
 
+For more check [[https://github.com/grpc-ecosystem/go-grpc-middleware][grpc middleware]]
 
 * Json interoperability (grpc gateway?)
 
