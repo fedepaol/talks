@@ -86,6 +86,7 @@ Grpc introduces channels, rpcs and messages:
 : Binary serialization protocol
 : Run the protoc compiler and get data classes + serialization / deserialization
 : sync call, streamed result, streamed in
+: use for streaming: pagination (memory efficient) OR pub / sub
 : code generation for a lot of languages, interoperability
 : two parts: types & endpoints
 : there is a way to marshal from / to json. Useful for debugging
@@ -425,6 +426,14 @@ Server side not natively supported. Must use [[github.com/grpc-ecosystem/go-grpc
 : there are some methods that might not need authenticatoin
 : there are some methods that are not idempotent (and for that reason you don't want to retry)
 
+* Other interceptor goodies
+
+- Tracing (with opentracing)
+- Logging
+- Monitoring
+
+For more check [[https://github.com/grpc-ecosystem/go-grpc-middleware][grpc middleware]]
+
 * Service discovery & load balancing
 
 : Until now we saw we point the server using an address and a port. Very like what we do with 
@@ -507,14 +516,8 @@ The balancer is a Grpc endpoint itself:
 : The servers may want to communicate.
 : The list is the order in which the calls must hit the servers.
 
-* Other interceptor goodies
-
-- Tracing (with opentracing)
-- Logging
-- Monitoring
-
-For more check [[https://github.com/grpc-ecosystem/go-grpc-middleware][grpc middleware]]
-
 * Json interoperability (grpc gateway?)
+
+* Reflection (& tooling)
 
 * Conclusion
