@@ -300,6 +300,10 @@ Server:
 
 * Interceptors
 
+.image images/interceptors.jpg 500 _
+
+* Interceptors
+
 Same as http middleware.
 
 Two types:
