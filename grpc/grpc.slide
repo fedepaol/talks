@@ -30,7 +30,8 @@ fpaoline@redhat.com
 
 .image images/mailboxes.jpg 400 _
 : TODO Creative commons
-: demand for interoperability. Mobile also introduced need for efficiency
+: demand for interoperability. In microservices, there is a push towards using different technology stacks
+: Mobile also introduced need for efficiency
 : not only Frontend / backend
 : due to the complexity of our systems we need the appropriate tools. Go beyond simple remote invokation
 
@@ -101,6 +102,21 @@ Grpc introduces channels, rpcs and messages:
 
 * protoc beer.proto --go_out=plugins=grpc:pkg/beer
 
+* Server side
+
+    type BeersServiceServer interface {
+        GetBeer(context.Context, *BeerID) (*Beer, error)
+        QueryBeer(*BeerQueryParams, BeersService_QueryBeerServer) error
+    }
+
+*Client*side*
+    
+    // Generated code
+    func NewBeersServiceClient(cc *grpc.ClientConn) BeersServiceClient
+    func (c *beersServiceClient) GetBeer(ctx context.Context, 
+                                         in *BeerID, 
+                                         opts ...grpc.CallOption) (*Beer, error)
+
 * Establishing a connection
 
 Client side:
@@ -134,21 +150,6 @@ Nice side effects:
 : Tbh a really forgiving server side keep alive is enabled by default
 : Needs to be enabled
 : Some proxies kill connections where no traffic is passing
-
-* Server side
-
-    type BeersServiceServer interface {
-        GetBeer(context.Context, *BeerID) (*Beer, error)
-        QueryBeer(*BeerQueryParams, BeersService_QueryBeerServer) error
-    }
-
-*Client*side*
-    
-    // Generated code
-    func NewBeersServiceClient(cc *grpc.ClientConn) BeersServiceClient
-    func (c *beersServiceClient) GetBeer(ctx context.Context, 
-                                         in *BeerID, 
-                                         opts ...grpc.CallOption) (*Beer, error)
 
 * Server implementation
 
@@ -521,3 +522,15 @@ The balancer is a Grpc endpoint itself:
 * Reflection (& tooling)
 
 * Conclusion
+
+* Splitting the monolith
+
+.image images/breaking.jpg 500 _
+
+: Now I want to briefly discuss the most common use case for grpc
+: Let's say we have a monolith we want to split
+: Identify the seams (quote to sam newman / micheal feathers)
+: With grpc is easy to make the boundaries interact. That's the easy part.
+: The hard part is to handle the complexity
+: Handle the fact that we need authentication, that we want to monitor, that the network is not reliable
+: By using grpc, we leverage the experience of the giants in handling this kind of problems
