@@ -521,9 +521,44 @@ The balancer is a Grpc endpoint itself:
 : The servers may want to communicate.
 : The list is the order in which the calls must hit the servers.
 
-* Json interoperability (grpc gateway?)
+* Other goodies
+
+* Grpc gateway
+
+[[https://github.com/grpc-ecosystem/grpc-gateway][Grpc gateway]]
+
+    service YourService {
+    rpc Echo(StringMessage) returns (StringMessage) {
+        option (google.api.http) = {
+        post: "/v1/example/echo"
+        body: "*"
+        };
+    }
+
+.image images/gprc-gateway.png 300 _
+
+: annotate the service
+: in case you need to support rest, or if you want to use some of the fancy tools for testing like pact
+: haven't used it personally.
 
 * Reflection (& tooling)
+
+- Allows clients to build requests without having proto file compiled
+
+    s := grpc.NewServer()
+    pb.RegisterGreeterServer(s, &server{})
+    reflection.Register(s)
+
+Tools:
+
+- [[https://github.com/fullstorydev/grpcurl][grpcurl]]
+- [[https://github.com/fullstorydev/grpcui][grpcui]]
+
+: one of the complains about rest vs grpc is that is easy to interact with a rest service via 
+: curl
+: the first is the equivalent of curl
+: the second is a full fledget ui
+: both allow to pass a proto file if we don't want to enable reflection on the server
 
 * Conclusion
 

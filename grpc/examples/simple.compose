@@ -2,10 +2,16 @@ version: "3"
 
 services:
   grpc_server:
-    build: .
+    build:
+      context: .
+      args:
+        examplename: simple
     command: /app/grpcsample -server
   grpc_client:
-    build: .
+    build:
+      context: .
+      args:
+        examplename: simple
     command: /app/grpcsample -target grpc_server
     depends_on:
       - grpc_server

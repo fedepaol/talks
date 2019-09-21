@@ -7,7 +7,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/fedepaol/grpc/examples/pkg/beer"
+	"github.com/fedepaol/grpcsamples/pkg/beer"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
