@@ -3,6 +3,6 @@ ARG examplename
 
 WORKDIR /app
 COPY . .
-RUN ls 
+RUN echo $examplename
 RUN go get
 RUN go build -o grpcsample ./$examplename

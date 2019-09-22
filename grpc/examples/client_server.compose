@@ -5,14 +5,20 @@ services:
     build:
       context: .
       args:
-        examplename: simple
+        examplename: $EXAMPLENAME
     command: /app/grpcsample -server
+    volumes:
+      - go-path:/go
   grpc_client:
     build:
       context: .
       args:
-        examplename: simple
+        examplename: $EXAMPLENAME
     command: /app/grpcsample -target grpc_server
     depends_on:
       - grpc_server
+    volumes:
+      - go-path:/go
+volumes:
+  go-path:
     

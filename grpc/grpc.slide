@@ -90,7 +90,7 @@ Grpc introduces channels, rpcs and messages:
 : use for streaming: pagination (memory efficient) OR pub / sub
 : code generation for a lot of languages, interoperability
 : two parts: types & endpoints
-: there is a way to marshal from / to json. Useful for debugging
+: there is a way to marshal from / to json. Useful for debugging. not efficient
 
 * Protobufs favour backward compatibility
 
@@ -147,9 +147,13 @@ Nice side effects:
 - Keeps a pool of connections healthy
 - Avoids killing idle of connections
 
+: grpc hides the connection complexity 
+: Normally, when there is no activity the connection state switches from ready to idle
 : Tbh a really forgiving server side keep alive is enabled by default
 : Needs to be enabled
 : Some proxies kill connections where no traffic is passing
+: Needed only in case of idle connections
+: There is also connection max age on server side
 
 * Server implementation
 
