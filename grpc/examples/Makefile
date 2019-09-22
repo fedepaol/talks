@@ -1,4 +1,4 @@
-.PHONY: simple
+.PHONY: simple, keepalive, streaming, errorhandling
 
 simple: 
 	export EXAMPLENAME=simple;\
@@ -10,4 +10,8 @@ keepalive:
 
 streaming: 
 	export EXAMPLENAME=streamingclient; \
+	docker-compose --file client_server.compose up --build --force-recreate
+
+errorhandling: 
+	export EXAMPLENAME=errorhandling; \
 	docker-compose --file client_server.compose up --build --force-recreate

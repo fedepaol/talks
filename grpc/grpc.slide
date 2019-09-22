@@ -220,17 +220,17 @@ On the client side:
 
     func (b *BeerServer) GetBeer(ctx context.Context, id *beer.BeerID) (*beer.Beer, error) {
         /* ... */
-        beerErr := beer.BeerError {
-            reason: BeerErrorCode_BEER_NOT_FOUND,
-            message: fmt.Sprintf("Could not find beer %v, *id)
+        beerErr := beer.BeerError{
+            Reason:  beer.BeerErrorCode_BEER_NOT_FOUND,
+            Message: fmt.Sprintf("Could not find beer %v", *id),
         }
-        st, _ := status.New(codes.NotFound, "not found").WithDetails(beerErr)
+        st, _ := status.New(codes.NotFound, "not found").WithDetails(&beerErr)
         return nil, st.Err()
     }
 
 On the client side:
 
-    beer, err := client.GetBeer(ctx, id)
+    res, err := client.GetBeer(ctx, id)
     if err != nil {
         st := status.Convert(err)
         for _, detail := range st.Details() {
@@ -571,6 +571,9 @@ Tools:
 .image images/breaking.jpg 500 _
 
 : Now I want to briefly discuss the most common use case for grpc
+: The whole microservices movement starts with splitting a monolith.
+: Even if you don't have a legacy one, the common practice is to start with a monolith to identify 
+: domain boundaries which may eventually define different services
 : Let's say we have a monolith we want to split
 : Identify the seams (quote to sam newman / micheal feathers)
 : With grpc is easy to make the boundaries interact. That's the easy part.
