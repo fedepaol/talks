@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"sync"
 	"time"
 
 	"github.com/fedepaol/grpcsamples/pkg/beer"
@@ -19,11 +20,23 @@ func doClient(serverAddr string) {
 	client := beer.NewBeersServiceClient(conn)
 	id := &beer.BeerID{Bid: 1}
 
-	ctx, _ := context.WithTimeout(context.Background(), 2*time.Second)
+	ctx, cancel := context.WithCancel(context.Background())
+
+	wg := sync.WaitGroup{}
+
+	wg.Add((1))
+	go func() {
+		time.Sleep(2 * time.Second)
+		fmt.Println("Canceling")
+		cancel()
+		wg.Done()
+	}()
+
 	res, err := client.GetBeer(ctx, id)
 	if err != nil {
 		log.Fatalf("Failed to get beer %v, error %v", id, err)
 	}
 
+	wg.Wait()
 	log.Println("Got beer ", res)
 }
