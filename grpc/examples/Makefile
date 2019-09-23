@@ -1,4 +1,4 @@
-.PHONY: simple, keepalive, streaming, errorhandling
+.PHONY: simple, keepalive, streaming, errorhandling, deadlinepropagation
 
 simple: 
 	export EXAMPLENAME=simple;\
@@ -15,3 +15,7 @@ streaming:
 errorhandling: 
 	export EXAMPLENAME=errorhandling; \
 	docker-compose --file client_server.compose up --build --force-recreate
+
+deadlinepropagation: 
+	export EXAMPLENAME=deadlinepropagation; \
+	docker-compose --file client_middle_server.compose up --build --force-recreate

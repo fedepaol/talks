@@ -1,0 +1,35 @@
+version: "3"
+
+services:
+  grpc_server:
+    build:
+      context: .
+      args:
+        examplename: $EXAMPLENAME
+    command: /app/grpcsample -server
+    volumes:
+      - go-path:/go
+  grpc_middle:
+    build:
+      context: .
+      args:
+        examplename: $EXAMPLENAME
+    command: /app/grpcsample -target grpc_server -middle -server
+    volumes:
+      - go-path:/go
+    depends_on:
+      - grpc_server
+  grpc_client:
+    build:
+      context: .
+      args:
+        examplename: $EXAMPLENAME
+    command: /app/grpcsample -target grpc_middle
+    depends_on:
+      - grpc_server
+      - grpc_middle
+    volumes:
+      - go-path:/go
+volumes:
+  go-path:
+    
