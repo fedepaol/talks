@@ -1,4 +1,4 @@
-.PHONY: simple, keepalive, streaming, errorhandling, deadlinepropagation, cancellation
+.PHONY: simple, keepalive, streaming, errorhandling, deadlinepropagation, cancellation, metadata
 
 simple: 
 	export EXAMPLENAME=simple;\
@@ -24,3 +24,7 @@ deadlinepropagation:
 cancellation: 
 	export EXAMPLENAME=cancellation; \
 	docker-compose --file client_middle_server.compose up --build --force-recreate
+
+metadata:
+	export EXAMPLENAME=metadata; \
+	docker-compose --file client_server.compose up --build --force-recreate

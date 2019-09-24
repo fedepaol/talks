@@ -290,13 +290,13 @@ Regular context values are not propagated.
 
 Client:
 
-    metaData := metadata.Pairs("key", "value")
-    ctx := metadata.NewContext(context.Background(), metaData)
-
+    md := metadata.Pairs("key", "value")
+	ctx := metadata.NewOutgoingContext(context.Background(), md)
+    
 Server:
 
-    meta, ok := metadata.FromContext(ctx)
-    value : = meta["key"][0]
+	meta, ok := metadata.FromIncomingContext(ctx)
+    value : = meta.Get("key")[0]
 
 : If it's business logic the api should be changed.
 : metadata should carry only "infrastructure" payload

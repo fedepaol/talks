@@ -2,7 +2,10 @@ package beer
 
 import (
 	"context"
+	fmt "fmt"
 	"strings"
+
+	"google.golang.org/grpc/metadata"
 
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -29,6 +32,10 @@ var beers = map[int]Beer{
 }
 
 func (b *beerServer) GetBeer(ctx context.Context, id *BeerID) (*Beer, error) {
+	md, ok := metadata.FromIncomingContext(ctx)
+	if ok {
+		fmt.Println("Received metadata ", md.Get("key")[0])
+	}
 	beerID := id.GetBid()
 	beer, ok := b.beers[int(beerID)]
 	if !ok {
