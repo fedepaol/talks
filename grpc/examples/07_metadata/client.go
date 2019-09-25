@@ -28,3 +28,21 @@ func doClient(serverAddr string) {
 
 	log.Println("Got beer ", beer)
 }
+
+func retryInterceptor(ctx context.Context,
+	method string,
+	req, reply interface{},
+	cc *grpc.ClientConn,
+	invoker grpc.UnaryInvoker,
+	opts ...grpc.CallOption) error {
+	var lastErr error
+	for attempt := uint(0); attempt < 10; attempt++ {
+		fmt.Println("Client invoking server")
+		lastErr = invoker(ctx, method, req, reply, cc, opts...)
+		if lastErr == nil {
+			return nil
+		}
+		fmt.Println("Client invoking server failed")
+	}
+	return lastErr
+}

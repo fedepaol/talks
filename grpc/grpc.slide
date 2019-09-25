@@ -443,7 +443,7 @@ Server side not natively supported. Must use [[github.com/grpc-ecosystem/go-grpc
 
 For more check [[https://github.com/grpc-ecosystem/go-grpc-middleware][grpc middleware]]
 
-* Service discovery & load balancing
+* Service discovery & Load balancing
 
 : Until now we saw we point the server using an address and a port. Very like what we do with 
 : rest. Grpc offers more sophisticated ways to fetch the endpoints
