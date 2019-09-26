@@ -13,6 +13,11 @@ fpaoline@redhat.com
 - CNV Networking team -> KubeVirt
 - Open source lover
 
+* Examples
+
+Examples of all the concepts described during this talk can be found at
+[[https://github.com/fedepaol/talks/tree/master/grpc/examples]]
+
 * Let's talk about RPC
 
 * All but a new thing
@@ -587,8 +592,3 @@ Tools:
 : The hard part is to handle the complexity
 : Handle the fact that we need authentication, that we want to monitor, that the network is not reliable
 : By using grpc, we leverage the experience of the giants in handling this kind of problems
-
-* Examples
-
-Examples of all the concepts described during this talk can be found at
-[[https://github.com/fedepaol/talks/tree/master/grpc/examples]]
