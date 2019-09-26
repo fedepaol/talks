@@ -34,7 +34,11 @@ var beers = map[int]Beer{
 func (b *beerServer) GetBeer(ctx context.Context, id *BeerID) (*Beer, error) {
 	md, ok := metadata.FromIncomingContext(ctx)
 	if ok {
-		fmt.Println("Received metadata ", md.Get("key")[0])
+		fmt.Println("Received metadata ")
+		key := md.Get("key")
+		if len(key) > 0 {
+			fmt.Println("Value for key ", key[0])
+		}
 	}
 	beerID := id.GetBid()
 	beer, ok := b.beers[int(beerID)]

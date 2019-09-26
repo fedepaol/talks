@@ -408,6 +408,7 @@ Server side not natively supported. Must use [[github.com/grpc-ecosystem/go-grpc
 : this provides no way to refresh the token. Smarter ways:
 : set the context metadata on per call basis
 : have a struct bound to the interceptor
+: here we use both the metadata and the interceptor on both sides.
 
 * Authentication (Server Side)
 

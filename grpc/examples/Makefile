@@ -32,3 +32,8 @@ metadata:
 retry_interceptor:
 	export EXAMPLENAME=08_retry_interceptor; \
 	docker-compose --file client_server.compose up --build --force-recreate
+
+opentracing:
+	export EXAMPLENAME=09_opentracing; \
+	docker-compose --file opentracing.compose up --build --force-recreate
+
