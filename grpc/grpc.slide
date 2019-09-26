@@ -444,6 +444,12 @@ Server side not natively supported. Must use [[github.com/grpc-ecosystem/go-grpc
 
 For more check [[https://github.com/grpc-ecosystem/go-grpc-middleware][grpc middleware]]
 
+* Opentracing + Jaeger
+
+.image images/opentracing.png 500 _
+
+: no brainer. You just add the interceptors and all your calls get traced
+
 * Service discovery & Load balancing
 
 : Until now we saw we point the server using an address and a port. Very like what we do with 
@@ -581,3 +587,8 @@ Tools:
 : The hard part is to handle the complexity
 : Handle the fact that we need authentication, that we want to monitor, that the network is not reliable
 : By using grpc, we leverage the experience of the giants in handling this kind of problems
+
+* Examples
+
+Examples of all the concepts described during this talk can be found at
+[[https://github.com/fedepaol/talks/tree/master/grpc/examples]]
