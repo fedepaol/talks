@@ -142,7 +142,7 @@ Server side:
 
 * Keep alive
 
-Not enabled by default, must use [[google.golang.org/grpc/keepalive]]
+Not enabled by default, must use [[https://google.golang.org/grpc/keepalive]]
 
 - Useful to detect disconnections where the endpoint hangs or dies
 - Relies on http2 ping frames
@@ -291,7 +291,7 @@ On the client side:
 
 Regular context values are not propagated.
 
-[[google.golang.org/grpc/metadata]] is.
+[[https://google.golang.org/grpc/metadata]] is.
 
 Client:
 
