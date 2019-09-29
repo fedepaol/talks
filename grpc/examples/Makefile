@@ -1,16 +1,16 @@
-.PHONY: simple, keepalive, streaming, errorhandling, deadlinepropagation, cancellation, metadata
+.PHONY: simple, keepalive, streaming, errorhandling, deadlinepropagation, cancellation, metadata, balancing, opentracing
 
 simple: 
 	export EXAMPLENAME=01_simple;\
-	docker-compose --file client_server.compose up --build --force-recreate 
+	docker-compose --file compose_files/client_server.compose up --build --force-recreate 
 
 keepalive: 
 	export EXAMPLENAME=02_keepalive; \
-	docker-compose --file client_server.compose up --build --force-recreate 
+	docker-compose --file compose_files/client_server.compose up --build --force-recreate 
 
 streaming: 
 	export EXAMPLENAME=03_streamingclient; \
-	docker-compose --file client_server.compose up --build --force-recreate
+	docker-compose --file compose_files/client_server.compose up --build --force-recreate
 
 errorhandling: 
 	export EXAMPLENAME=04_errorhandling; \
@@ -37,3 +37,6 @@ opentracing:
 	export EXAMPLENAME=09_opentracing; \
 	docker-compose --file opentracing.compose up --build --force-recreate
 
+loadbalancing:
+	export EXAMPLENAME=10_loadbalancing; \
+	docker-compose --file balancing.compose up --build --force-recreate
