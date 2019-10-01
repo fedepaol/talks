@@ -6,17 +6,17 @@ import (
 	"log"
 	"time"
 
-	"github.com/fedepaol/grpcsamples/pkg/beer"
+	"github.com/fedepaol/grpcsamples/pkg/movie"
 	"github.com/grpc-ecosystem/grpc-opentracing/go/otgrpc"
 	"google.golang.org/grpc"
 )
 
-// BeerServer is a beer server implementation
+// MovieServer is a movie server implementation
 type middleServer struct {
-	client beer.BeersServiceClient
+	client movie.MoviesServiceClient
 }
 
-func (b *middleServer) GetBeer(ctx context.Context, id *beer.BeerID) (*beer.Beer, error) {
+func (b *middleServer) GetMovie(ctx context.Context, id *movie.MovieID) (*movie.Movie, error) {
 	fmt.Println("Received request")
 	time.Sleep(5 * time.Second)
 	fmt.Println("Sending request")
@@ -25,27 +25,27 @@ func (b *middleServer) GetBeer(ctx context.Context, id *beer.BeerID) (*beer.Beer
 		fmt.Println("Is Canceled")
 	}
 
-	beer, err := b.client.GetBeer(ctx, id)
+	movie, err := b.client.GetMovie(ctx, id)
 
 	if err != nil {
 		fmt.Println("Got error ", err)
 		return nil, err
 	}
 	fmt.Println("Sending response")
-	return beer, nil
+	return movie, nil
 }
 
-func (b *middleServer) QueryBeer(p *beer.BeerQueryParams, s beer.BeersService_QueryBeerServer) error {
+func (b *middleServer) QueryMovie(p *movie.MovieQueryParams, s movie.MoviesService_QueryMovieServer) error {
 	panic("not implemented")
 }
 
 // NewMiddle returns an instance of the middle server
-func newMiddle(serverAddr string, port int) beer.BeersServiceServer {
+func newMiddle(serverAddr string, port int) movie.MoviesServiceServer {
 	target := fmt.Sprintf("%s:%d", serverAddr, port)
 	conn, err := grpc.Dial(target, grpc.WithInsecure(), grpc.WithUnaryInterceptor(otgrpc.OpenTracingClientInterceptor(tracer)))
 	if err != nil {
 		log.Fatalf("Failed to dial to server %v", err)
 	}
-	client := beer.NewBeersServiceClient(conn)
+	client := movie.NewMoviesServiceClient(conn)
 	return &middleServer{client: client}
 }

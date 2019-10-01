@@ -6,7 +6,7 @@ import (
 	"log"
 	"time"
 
-	"github.com/fedepaol/grpcsamples/pkg/beer"
+	"github.com/fedepaol/grpcsamples/pkg/movie"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/keepalive"
 )
@@ -24,13 +24,13 @@ func doClient(serverAddr string) {
 	if err != nil {
 		log.Fatalf("Failed to dial to server %v", err)
 	}
-	client := beer.NewBeersServiceClient(conn)
-	id := &beer.BeerID{Bid: 1}
+	client := movie.NewMoviesServiceClient(conn)
+	id := &movie.MovieID{Mid: 1}
 
-	beer, err := client.GetBeer(context.Background(), id)
+	movie, err := client.GetMovie(context.Background(), id)
 	if err != nil {
-		log.Fatalf("Failed to get beer %v, error %v", id, err)
+		log.Fatalf("Failed to get movie %v, error %v", id, err)
 	}
 
-	log.Println("Got beer ", beer)
+	log.Println("Got movie ", movie)
 }

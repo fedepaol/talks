@@ -5,7 +5,7 @@ import (
 	"net"
 	"strconv"
 
-	"github.com/fedepaol/grpcsamples/pkg/beer"
+	"github.com/fedepaol/grpcsamples/pkg/movie"
 	"github.com/grpc-ecosystem/grpc-opentracing/go/otgrpc"
 
 	"google.golang.org/grpc"
@@ -18,7 +18,7 @@ func startServer() {
 	}
 
 	server := grpc.NewServer(grpc.UnaryInterceptor(otgrpc.OpenTracingServerInterceptor(tracer)))
-	beer.RegisterBeersServiceServer(server, beer.NewServer())
+	movie.RegisterMoviesServiceServer(server, movie.NewServer())
 
 	err = server.Serve(lis)
 	if err != nil {
@@ -34,7 +34,7 @@ func startMiddle(serverAddr string) {
 
 	server := grpc.NewServer(grpc.UnaryInterceptor(otgrpc.OpenTracingServerInterceptor(tracer)))
 
-	beer.RegisterBeersServiceServer(server, newMiddle(serverAddr, port))
+	movie.RegisterMoviesServiceServer(server, newMiddle(serverAddr, port))
 
 	err = server.Serve(lis)
 	if err != nil {

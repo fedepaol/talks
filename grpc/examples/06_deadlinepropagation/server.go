@@ -5,7 +5,7 @@ import (
 	"net"
 	"strconv"
 
-	"github.com/fedepaol/grpcsamples/pkg/beer"
+	"github.com/fedepaol/grpcsamples/pkg/movie"
 	"google.golang.org/grpc"
 )
 
@@ -16,7 +16,7 @@ func startServer() {
 	}
 
 	server := grpc.NewServer()
-	beer.RegisterBeersServiceServer(server, beer.NewServer())
+	movie.RegisterMoviesServiceServer(server, movie.NewServer())
 
 	err = server.Serve(lis)
 	if err != nil {
@@ -31,7 +31,7 @@ func startMiddle(serverAddr string) {
 	}
 
 	server := grpc.NewServer()
-	beer.RegisterBeersServiceServer(server, newMiddle(serverAddr, port))
+	movie.RegisterMoviesServiceServer(server, newMiddle(serverAddr, port))
 
 	err = server.Serve(lis)
 	if err != nil {

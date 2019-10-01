@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/fedepaol/grpcsamples/pkg/beer"
+	"github.com/fedepaol/grpcsamples/pkg/movie"
 	"github.com/grpc-ecosystem/grpc-opentracing/go/otgrpc"
 	"google.golang.org/grpc"
 )
@@ -16,13 +16,13 @@ func doClient(serverAddr string) {
 	if err != nil {
 		log.Fatalf("Failed to dial to server %v", err)
 	}
-	client := beer.NewBeersServiceClient(conn)
-	id := &beer.BeerID{Bid: 1}
+	client := movie.NewMoviesServiceClient(conn)
+	id := &movie.MovieID{Mid: 1}
 
-	res, err := client.GetBeer(context.Background(), id)
+	res, err := client.GetMovie(context.Background(), id)
 	if err != nil {
-		log.Fatalf("Failed to get beer %v, error %v", id, err)
+		log.Fatalf("Failed to get movie %v, error %v", id, err)
 	}
 
-	log.Println("Got beer ", res)
+	log.Println("Got movie ", res)
 }
