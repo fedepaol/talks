@@ -20,7 +20,7 @@ Examples of all the concepts described during this talk can be found at
 
 * Let's talk about RPC
 
-* All but a new thing
+* Prior art
 
 - Corba
 - Wsdl
@@ -60,7 +60,7 @@ Http2 allows multiplexing of requests over a single tcp connection (streams)
 
 Grpc introduces channels, rpcs and messages:
 
-.image images/grpc_on_http2_mapping_2.png 400 _
+.image images/grpc_on_http2_mapping_2.png 500 _
 
 : Many streams on a single connection. On each stream, many messages (binary format)
 : Advantage of a stream -> connection concurrency. Interleave messages on a single connection
