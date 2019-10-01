@@ -2,15 +2,15 @@
 
 simple: 
 	export EXAMPLENAME=01_simple;\
-	docker-compose --file compose_files/client_server.compose up --build --force-recreate 
-
-keepalive: 
-	export EXAMPLENAME=02_keepalive; \
-	docker-compose --file compose_files/client_server.compose up --build --force-recreate 
+	docker-compose --file client_server.compose up --build --force-recreate 
 
 streaming: 
-	export EXAMPLENAME=03_streamingclient; \
-	docker-compose --file compose_files/client_server.compose up --build --force-recreate
+	export EXAMPLENAME=02_streamingclient; \
+	docker-compose --file client_server.compose up --build --force-recreate
+
+keepalive: 
+	export EXAMPLENAME=03_keepalive; \
+	docker-compose --file client_server.compose up --build --force-recreate 
 
 errorhandling: 
 	export EXAMPLENAME=04_errorhandling; \
@@ -19,7 +19,6 @@ errorhandling:
 deadlinepropagation: 
 	export EXAMPLENAME=06_deadlinepropagation; \
 	docker-compose --file client_middle_server.compose up --build --force-recreate
-
 
 cancellation: 
 	export EXAMPLENAME=05_cancellation; \

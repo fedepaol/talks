@@ -20,7 +20,7 @@ Examples of all the concepts described during this talk can be found at
 
 * Let's talk about RPC
 
-* All but a new thing
+* Prior art
 
 - Corba
 - Wsdl
@@ -60,7 +60,7 @@ Http2 allows multiplexing of requests over a single tcp connection (streams)
 
 Grpc introduces channels, rpcs and messages:
 
-.image images/grpc_on_http2_mapping_2.png 400 _
+.image images/grpc_on_http2_mapping_2.png 500 _
 
 : Many streams on a single connection. On each stream, many messages (binary format)
 : Advantage of a stream -> connection concurrency. Interleave messages on a single connection
@@ -73,18 +73,18 @@ Grpc introduces channels, rpcs and messages:
 
 *Types*definition*
 
-    message Beer {
-        int32 bid = 1;
-        string beer_name = 2;
-        string beer_description = 3;
-        string beer_style = 4;
+    message Movie {
+        int32 mid = 1;
+        string movie_name = 2;
+        string movie_description = 3;
+        string movie_style = 4;
     }
 
 *Services*definition*
 
-    service BeersService {
-        rpc GetBeer(BeerID) returns (Beer);
-        rpc QueryBeer(BeerQueryParams) returns (stream Beer);
+    service MoviesService {
+        rpc GetMovie(MovieID) returns (Movie);
+        rpc QueryMovie(MovieQueryParams) returns (stream Movie);
     }
 
 
@@ -105,35 +105,35 @@ Grpc introduces channels, rpcs and messages:
 : Protobuf has a list of safe changes,what happens if a type gets converted in another type.
 : be careful in setting the default values 
 
-* protoc beer.proto --go_out=plugins=grpc:pkg/beer
+* protoc movie.proto --go_out=plugins=grpc:pkg/movie
 
 * Server side
 
-    type BeersServiceServer interface {
-        GetBeer(context.Context, *BeerID) (*Beer, error)
-        QueryBeer(*BeerQueryParams, BeersService_QueryBeerServer) error
+    type MoviesServiceServer interface {
+        GetMovie(context.Context, *MovieID) (*Movie, error)
+        QueryMovie(*MovieQueryParams, MoviesService_QueryMovieServer) error
     }
 
 *Client*side*
     
     // Generated code
-    func NewBeersServiceClient(cc *grpc.ClientConn) BeersServiceClient
-    func (c *beersServiceClient) GetBeer(ctx context.Context, 
-                                         in *BeerID, 
-                                         opts ...grpc.CallOption) (*Beer, error)
+    func NewMoviesServiceClient(cc *grpc.ClientConn) MoviesServiceClient
+    func (c *moviesServiceClient) GetMovie(ctx context.Context, 
+                                         in *MovieID, 
+                                         opts ...grpc.CallOption) (*Movie, error)
 
 * Establishing a connection
 
 Client side:
 
     conn, _ := grpc.Dial(serverAddr, grpc.WithInsecure())
-    client := beer.NewBeersServiceClient(conn)
+    client := movie.NewMoviesServiceClient(conn)
        
 Server side:
 
     lis, _ := net.Listen("tcp", port)
     server := grpc.NewServer()
-    beer.RegisterBeersServiceServer(server, &BeerServer{})
+    movie.RegisterMoviesServiceServer(server, &MovieServer{})
     server.Serve(lis)
 
 : Note that a connection can be in idle state, meaning that no rpc is invoked (or idle timeout has passed)
@@ -162,14 +162,14 @@ Nice side effects:
 
 * Server implementation
 
-    func (b *BeerServer) GetBeer(ctx context.Context, id *beer.BeerID) (*beer.Beer, error) {
-        beerID := id.GetBid()
-        beer, ok := b.beers[int(beerID)]
+    func (b *MovieServer) GetMovie(ctx context.Context, id *movie.MovieID) (*movie.Movie, error) {
+        movieID := id.GetMid()
+        movie, ok := b.movies[int(movieID)]
         if !ok {
             // from google.golang.org/grpc/status
-            return nil, status.Error(codes.NotFound, "beer not found")
+            return nil, status.Error(codes.NotFound, "movie not found")
         }
-        return &beer, nil
+        return &movie, nil
     }
 
 : convenience method to avoid npes
@@ -177,10 +177,10 @@ Nice side effects:
 
 * Server implementation (streaming)
 
-    func (b *BeerServer) QueryBeer(p *beer.BeerQueryParams, 
-                                   s beer.BeersService_QueryBeerServer) error {
-        for _, b := range b.beers {
-            if strings.Contains(b.BeerDescription, p.GetQuery()) {
+    func (b *MovieServer) QueryMovie(p *movie.MovieQueryParams, 
+                                   s movie.MoviesService_QueryMovieServer) error {
+        for _, b := range b.movies {
+            if strings.Contains(b.MovieDescription, p.GetQuery()) {
                 s.Send(&b)
             }
         }
@@ -191,56 +191,56 @@ Nice side effects:
 
 * Error Handling
 
-    func (b *BeerServer) GetBeer(ctx context.Context, id *beer.BeerID) (*beer.Beer, error) {
+    func (b *MovieServer) GetMovie(ctx context.Context, id *movie.MovieID) (*movie.Movie, error) {
         /* ... */
-        return nil, fmt.Error("Failed to get a beer")
+        return nil, fmt.Error("Failed to get a movie")
     }
 
 On the client side:
 
-    beer, err := client.GetBeer(ctx, id)
-    if err != nil && err.Error() == "Failed to get a beer" {
-        // handle missing beer
+    movie, err := client.GetMovie(ctx, id)
+    if err != nil && err.Error() == "Failed to get a movie" {
+        // handle missing movie
     }
 
 * Error Handling
 
-    func (b *BeerServer) GetBeer(ctx context.Context, id *beer.BeerID) (*beer.Beer, error) {
+    func (b *MovieServer) GetMovie(ctx context.Context, id *movie.MovieID) (*movie.Movie, error) {
         /* ... */
-        return nil, status.Error(codes.NotFound, "beer not found")
+        return nil, status.Error(codes.NotFound, "movie not found")
     }
 
 On the client side:
 
-    beer, err := client.GetBeer(ctx, id)
+    movie, err := client.GetMovie(ctx, id)
     if err != nil {
         st := status.Convert(err)
-        if st != nil && st.Code() == codes.NotFound && st.Message() == "beer not found" {
-            // handle missing beer
+        if st != nil && st.Code() == codes.NotFound && st.Message() == "movie not found" {
+            // handle missing movie
         }
     }
 : grpc comes with a grpc/status package to provide rich errors
 
 * Error Handling
 
-    func (b *BeerServer) GetBeer(ctx context.Context, id *beer.BeerID) (*beer.Beer, error) {
+    func (b *MovieServer) GetMovie(ctx context.Context, id *movie.MovieID) (*movie.Movie, error) {
         /* ... */
-        beerErr := beer.BeerError{
-            Reason:  beer.BeerErrorCode_BEER_NOT_FOUND,
-            Message: fmt.Sprintf("Could not find beer %v", *id),
+        movieErr := movie.MovieError{
+            Reason:  movie.MovieErrorCode_MOVIE_NOT_FOUND,
+            Message: fmt.Sprintf("Could not find movie %v", *id),
         }
-        st, _ := status.New(codes.NotFound, "not found").WithDetails(&beerErr)
+        st, _ := status.New(codes.NotFound, "not found").WithDetails(&movieErr)
         return nil, st.Err()
     }
 
 On the client side:
 
-    res, err := client.GetBeer(ctx, id)
+    res, err := client.GetMovie(ctx, id)
     if err != nil {
         st := status.Convert(err)
         for _, detail := range st.Details() {
             switch t := detail.(type) {
-                case *beer.BeerError:
+                case *movie.MovieError:
                     // handle t payload
             }
         }
@@ -255,15 +255,15 @@ On the client side:
 * Deadline propagation
 
     ctx, cancel := context.WithTimeout(context.Background(), time.Second)
-    beer, err := client.GetBeer(ctx, id)
+    movie, err := client.GetMovie(ctx, id)
 
 .image images/propagation.png 200 _
     
-    func (b *MiddleServer) GetBeer(ctx context.Context, id *beer.BeerID) (*beer.Beer, error) {
+    func (b *MiddleServer) GetMovie(ctx context.Context, id *movie.MovieID) (*movie.Movie, error) {
         if ctx.Err() == context.Canceled {
             return status.New(codes.Canceled, "Client cancelled, abandoning.")
         }
-        b.client.GetBeer(ctx, id)
+        b.client.GetMovie(ctx, id)
     }
 
 
@@ -278,7 +278,7 @@ On the client side:
     ctx, cancel := context.WithCancel(context.Background())
     done := make(chan bool, 0)
     go func() {
-        client.GetBeer(ctx, id)
+        client.GetMovie(ctx, id)
         close(done)
     }()
     cancel()
@@ -529,7 +529,7 @@ Built in balancing strategies (pick first, round_robin, grpclb)
 The balancer is a Grpc endpoint itself:
 
     service LoadBalancer {
-        // Bidirectional rpc to get a list of servers.
+        // Midirectional rpc to get a list of servers.
         rpc BalanceLoad(stream LoadBalanceRequest) returns (stream LoadBalanceResponse);
     }
 

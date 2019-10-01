@@ -6,7 +6,7 @@ import (
 	"io"
 	"log"
 
-	"github.com/fedepaol/grpcsamples/pkg/beer"
+	"github.com/fedepaol/grpcsamples/pkg/movie"
 	"google.golang.org/grpc"
 )
 
@@ -16,25 +16,25 @@ func doClient(serverAddr string) {
 	if err != nil {
 		log.Fatalf("Failed to dial to server %v", err)
 	}
-	client := beer.NewBeersServiceClient(conn)
-	id := &beer.BeerID{Bid: 1}
+	client := movie.NewMoviesServiceClient(conn)
+	id := &movie.MovieID{Mid: 1}
 
-	fmt.Println("querying beers containing and")
-	queryParams := &beer.BeerQueryParams{Query: "and"}
-	stream, err := client.QueryBeer(context.Background(), queryParams)
+	fmt.Println("querying movie containing and")
+	queryParams := &movie.MovieQueryParams{Query: "and"}
+	stream, err := client.QueryMovie(context.Background(), queryParams)
 	if err != nil {
-		log.Fatalf("Failed to query beer %v, error %v", id, err)
+		log.Fatalf("Failed to query movie %v, error %v", id, err)
 	}
 
 	for {
-		beer, err := stream.Recv()
+		movie, err := stream.Recv()
 		if err == io.EOF {
 			break
 		}
 		if err != nil {
-			log.Fatalf("Errir while streaming beer %v %v", queryParams, err)
+			log.Fatalf("Errir while streaming movie %v %v", queryParams, err)
 		}
 
-		log.Println("Streaming got beer ", beer)
+		log.Println("Streaming got movie ", movie)
 	}
 }

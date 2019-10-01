@@ -4,29 +4,29 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/fedepaol/grpcsamples/pkg/beer"
+	"github.com/fedepaol/grpcsamples/pkg/movie"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
 
-// BeerServer is a beer server implementation
-type errorBeerServer struct {
+// MovieServer is a movie server implementation
+type errorMovieServer struct {
 }
 
-func (s *errorBeerServer) GetBeer(_ context.Context, id *beer.BeerID) (*beer.Beer, error) {
-	beerErr := beer.BeerError{
-		Reason:  beer.BeerErrorCode_BEER_NOT_FOUND,
-		Message: fmt.Sprintf("Could not find beer %v", *id),
+func (s *errorMovieServer) GetMovie(_ context.Context, id *movie.MovieID) (*movie.Movie, error) {
+	movieErr := movie.MovieError{
+		Reason:  movie.MovieErrorCode_MOVIE_NOT_FOUND,
+		Message: fmt.Sprintf("Could not find movie %v", *id),
 	}
-	st, _ := status.New(codes.NotFound, "not found").WithDetails(&beerErr)
+	st, _ := status.New(codes.NotFound, "not found").WithDetails(&movieErr)
 	return nil, st.Err()
 }
 
-func (s *errorBeerServer) QueryBeer(_ *beer.BeerQueryParams, _ beer.BeersService_QueryBeerServer) error {
+func (s *errorMovieServer) QueryMovie(_ *movie.MovieQueryParams, _ movie.MoviesService_QueryMovieServer) error {
 	panic("not implemented")
 }
 
 // NewServer returns an instance of the server
-func NewServer() beer.BeersServiceServer {
-	return &errorBeerServer{}
+func NewServer() movie.MoviesServiceServer {
+	return &errorMovieServer{}
 }

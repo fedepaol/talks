@@ -7,7 +7,7 @@ import (
 	"net"
 	"strconv"
 
-	"github.com/fedepaol/grpcsamples/pkg/beer"
+	"github.com/fedepaol/grpcsamples/pkg/movie"
 	"google.golang.org/grpc"
 )
 
@@ -18,7 +18,7 @@ func startServer(isFaulty bool) {
 	}
 
 	server := grpc.NewServer()
-	beer.RegisterBeersServiceServer(server, newServer(isFaulty))
+	movie.RegisterMoviesServiceServer(server, newServer(isFaulty))
 
 	err = server.Serve(lis)
 	if err != nil {
@@ -26,13 +26,13 @@ func startServer(isFaulty bool) {
 	}
 }
 
-// BeerServer is a beer server implementation
-type beerServer struct {
+// MovieServer is a movie server implementation
+type movieServer struct {
 	mustFail       bool
 	lastWasSuccess bool
 }
 
-func (b *beerServer) GetBeer(ctx context.Context, id *beer.BeerID) (*beer.Beer, error) {
+func (b *movieServer) GetMovie(ctx context.Context, id *movie.MovieID) (*movie.Movie, error) {
 
 	if b.mustFail {
 		fmt.Println("I am the faulty one")
@@ -44,22 +44,22 @@ func (b *beerServer) GetBeer(ctx context.Context, id *beer.BeerID) (*beer.Beer, 
 
 		return nil, fmt.Errorf("Failure faulty")
 	}
-	beer := beer.Beer{
-		BeerName:        "Celebration Ale",
-		BeerDescription: "The long, cold nights of winter are a little brighter with Celebration Ale. Wonderfully robust and rich, Celebration Ale is dry-hopped for a lively, intense aroma. Brewed especially for the holidays, it is perfect for a festive gathering or for a quiet evening at home.",
-		BeerStyle:       "American IPA",
-		Bid:             1,
+	movie := movie.Movie{
+		MovieName:        "Celebration Ale",
+		MovieDescription: "The long, cold nights of winter are a little brighter with Celebration Ale. Wonderfully robust and rich, Celebration Ale is dry-hopped for a lively, intense aroma. Brewed especially for the holidays, it is perfect for a festive gathering or for a quiet evening at home.",
+		MovieStyle:       "American IPA",
+		Mid:             1,
 	}
 	b.lastWasSuccess = true
-	return &beer, nil
+	return &movie, nil
 }
 
-func (b *beerServer) QueryBeer(p *beer.BeerQueryParams, s beer.BeersService_QueryBeerServer) error {
+func (b *movieServer) QueryMovie(p *movie.MovieQueryParams, s movie.MoviesService_QueryMovieServer) error {
 	panic("not implemented")
 	return nil
 }
 
 // NewServer returns an instance of the server
-func newServer(isFaulty bool) beer.BeersServiceServer {
-	return &beerServer{mustFail: isFaulty}
+func newServer(isFaulty bool) movie.MoviesServiceServer {
+	return &movieServer{mustFail: isFaulty}
 }

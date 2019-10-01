@@ -1,0 +1,32 @@
+syntax = "proto3";
+
+service MoviesService {
+    rpc GetMovie(MovieID) returns (Movie);
+    rpc QueryMovie(MovieQueryParams) returns (stream Movie);
+}
+
+message MovieID {
+  int32 mid = 1;
+}
+
+message MovieQueryParams {
+  string query = 1;
+}
+
+message Movie {
+  int32 mid = 1;
+  string movie_name = 2;
+  string movie_description = 3;
+  string movie_style = 4;
+}
+
+enum MovieErrorCode {
+  UNKNOWN = 0;
+  INVALID_MOVIE = 1;
+  MOVIE_NOT_FOUND = 2;
+}
+
+message MovieError {
+  MovieErrorCode reason = 1;
+  string message = 2;
+}
