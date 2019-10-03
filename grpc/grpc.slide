@@ -109,20 +109,20 @@ Grpc introduces channels, rpcs and messages:
 
 * protoc movie.proto --go_out=plugins=grpc:pkg/movie
 
-* Server side
-
-    type MoviesServiceServer interface {
-        GetMovie(context.Context, *MovieID) (*Movie, error)
-        QueryMovie(*MovieQueryParams, MoviesService_QueryMovieServer) error
-    }
-
-*Client*side*
+* Client side
     
     // Generated code
     func NewMoviesServiceClient(cc *grpc.ClientConn) MoviesServiceClient
     func (c *moviesServiceClient) GetMovie(ctx context.Context, 
                                          in *MovieID, 
                                          opts ...grpc.CallOption) (*Movie, error)
+
+*Server*side*
+
+    type MoviesServiceServer interface {
+        GetMovie(context.Context, *MovieID) (*Movie, error)
+        QueryMovie(*MovieQueryParams, MoviesService_QueryMovieServer) error
+    }
 
 * Establishing a connection
 
@@ -531,7 +531,7 @@ Built in balancing strategies (pick first, round_robin, grpclb)
 The balancer is a Grpc endpoint itself:
 
     service LoadBalancer {
-        // Midirectional rpc to get a list of servers.
+        // Bidirectional rpc to get a list of servers.
         rpc BalanceLoad(stream LoadBalanceRequest) returns (stream LoadBalanceResponse);
     }
 
