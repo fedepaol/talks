@@ -9,9 +9,11 @@ fpaoline@redhat.com
 * About me
 
 - Red Hatter
-- Doing distributed systems for more than 15 years
+- Doing distributed systems for more than 10 years
 - KubeVirt networking team
 - Open source lover
+
+: KubeVirt is a technology
 
 * Examples
 
@@ -54,7 +56,7 @@ Examples of all the concepts described during this talk can be found at
 : stands for Grpc remote procedure calls
 : iteration of google's stubby, then opensourced
 
-* Grpc & http2
+* Grpc & Http2
 
 Http2 allows multiplexing of requests over a single tcp connection (streams)
 
