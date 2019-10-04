@@ -90,11 +90,9 @@ Grpc introduces channels, rpcs and messages:
     }
 
 
-: Default serialization mechanism for Grpc
-: Binary serialization protocol
+: IT'S BINARY
+: IT'S TYPE SAFE
 : Run the protoc compiler and get data classes + serialization / deserialization
-: sync call, streamed result, streamed in
-: use for streaming: pagination (memory efficient) OR pub / sub
 : code generation for a lot of languages, interoperability
 : two parts: types & endpoints
 : there is a way to marshal from / to json. Useful for debugging. not efficient
@@ -123,6 +121,10 @@ Grpc introduces channels, rpcs and messages:
         GetMovie(context.Context, *MovieID) (*Movie, error)
         QueryMovie(*MovieQueryParams, MoviesService_QueryMovieServer) error
     }
+
+: sync call, streamed result, streamed in
+: use for streaming: pagination (memory efficient) OR pub / sub
+: Make an example. Let's say you want 1000 results
 
 * Establishing a connection
 
@@ -271,7 +273,7 @@ On the client side:
 
 : deadline sets a point in time, the same for all the calls
 : with timeout sets a deadline in the future.
-: if the same context gets propagated the calls will expire without wasting resources.
+: MAKE TEH EXAMPLE
 : the server can check if the client is still interested before wasting resources. Can decide to proceed, if the request is cached 
 : and idempotency is implemented
 
@@ -455,6 +457,7 @@ For more check [[https://github.com/grpc-ecosystem/go-grpc-middleware][grpc midd
 
 .image images/opentracing.png 500 _
 
+: manually you'll have to link the spans, propagate them. It's a lot of work
 : no brainer. You just add the interceptors and all your calls get traced
 
 * Service discovery & Load balancing
@@ -584,7 +587,6 @@ Tools:
 
 .image images/breaking.jpg 500 _
 
-: Now I want to briefly discuss the most common use case for grpc
 : The whole microservices movement starts with splitting a monolith.
 : Even if you don't have a legacy one, the common practice is to start with a monolith to identify 
 : domain boundaries which may eventually define different services
