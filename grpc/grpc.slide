@@ -42,6 +42,16 @@ Examples of all the concepts described during this talk can be found at
 : not only Frontend / backend
 : due to the complexity of our systems we need the appropriate tools. Go beyond simple remote invokation
 
+* Splitting the monolith
+
+.image images/breaking.jpg 500 _
+
+: The whole microservices movement starts with splitting a monolith.
+: Even if you don't have a legacy one, the common practice is to start with a monolith to identify 
+: domain boundaries which may eventually define different services
+: Let's say we have a monolith we want to split
+: Identify the seams (quote to sam newman / micheal feathers)
+
 * What options do I have?
 
 - rest
@@ -261,14 +271,7 @@ On the client side:
     ctx, cancel := context.WithTimeout(context.Background(), time.Second)
     movie, err := client.GetMovie(ctx, id)
 
-.image images/propagation.png 200 _
-    
-    func (b *MiddleServer) GetMovie(ctx context.Context, id *movie.MovieID) (*movie.Movie, error) {
-        if ctx.Err() == context.Canceled {
-            return status.New(codes.Canceled, "Client cancelled, abandoning.")
-        }
-        b.client.GetMovie(ctx, id)
-    }
+.image images/propagation.png 300 _
 
 
 : deadline sets a point in time, the same for all the calls
@@ -287,7 +290,7 @@ On the client side:
     }()
     cancel()
 
-.image images/cancellation.png 200 _
+.image images/cancellation.png 300 _
 
 : cancellation gets propagated through te calls
 
@@ -362,13 +365,16 @@ Server side not natively supported. Must use [[github.com/grpc-ecosystem/go-grpc
                           cc *grpc.ClientConn, 
                           invoker grpc.UnaryInvoker, 
                           opts ...grpc.CallOption) error {
+
+
         var lastErr error
         for attempt := uint(0); attempt < 10; attempt++ {
-            lastErr = invoker(ctx, method, req, reply, cc, opts...)
+            lastErr = invoker(ctx, method, req, reply, cc, opts...)    
             if lastErr == nil {
                 return nil
             }
         }
+
         return lastErr
     }
 
@@ -384,10 +390,13 @@ Server side not natively supported. Must use [[github.com/grpc-ecosystem/go-grpc
                                 req interface{}, 
                                 info *grpc.UnaryServerInfo, 
                                 handler grpc.UnaryHandler) (interface{}, error) {
+
+
         if Limit() {
             return nil, status.Errorf(codes.ResourceExhausted, 
                                      "%s is rejected by retry limiter.", info.FullMethod)
         }
+
         return handler(ctx, req)
     }
 
@@ -401,6 +410,7 @@ Server side not natively supported. Must use [[github.com/grpc-ecosystem/go-grpc
                             cc *grpc.ClientConn,
                             invoker grpc.UnaryInvoker,
                             opts ...grpc.CallOption) error {
+
 
             authCtx := metadata.AppendToOutgoingContext(ctx, "jwt", "bearer "+jwt.token)
             err := invoker(authCtx, method, req, reply, cc, opts...)
@@ -425,15 +435,12 @@ Server side not natively supported. Must use [[github.com/grpc-ecosystem/go-grpc
                         req interface{}, 
                         _ *grpc.UnaryServerInfo, 
                         handler grpc.UnaryHandler) (interface{}, error) {
-        meta, ok := metadata.FromIncomingContext(ctx)
-        if !ok {
-            return nil, status.Error(codes.Unauthenticated, "INTERNAL_SERVER_ERROR")
-        }
-        if len(meta["jwt"]) != 1 {
-            return nil, status.Error(codes.Unauthenticated, "INTERNAL_SERVER_ERROR")
-        }
-        token := meta["jwt"][0]
+
+
+        token := fetchTokenFromContext(ctx)
         // handle token validation
+
+
         return handler(ctx, req)
     }
 
@@ -461,6 +468,8 @@ For more check [[https://github.com/grpc-ecosystem/go-grpc-middleware][grpc midd
 : no brainer. You just add the interceptors and all your calls get traced
 
 * Service discovery & Load balancing
+
+.image images/service_discovery.jpg 500 _
 
 : Until now we saw we point the server using an address and a port. Very like what we do with 
 : rest. Grpc offers more sophisticated ways to fetch the endpoints
@@ -581,18 +590,10 @@ Tools:
 : the second is a full fledget ui
 : both allow to pass a proto file if we don't want to enable reflection on the server
 
-* Conclusion
+* Distributed systems are hard to get right!
 
-* Splitting the monolith
-
-.image images/breaking.jpg 500 _
-
-: The whole microservices movement starts with splitting a monolith.
-: Even if you don't have a legacy one, the common practice is to start with a monolith to identify 
-: domain boundaries which may eventually define different services
-: Let's say we have a monolith we want to split
-: Identify the seams (quote to sam newman / micheal feathers)
-: With grpc is easy to make the boundaries interact. That's the easy part.
+: If we were in the magic land where everything works as expected, you could even do it with your own protocol over socket.
+: But the distribution comes with an extra toll to pay. That's why people test in production. 
 : The hard part is to handle the complexity
 : Handle the fact that we need authentication, that we want to monitor, that the network is not reliable
 : By using grpc, we leverage the experience of the giants in handling this kind of problems
