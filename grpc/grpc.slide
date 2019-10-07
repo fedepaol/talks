@@ -27,7 +27,7 @@ Examples of all the concepts described during this talk can be found at
 - Corba
 - Wsdl
 - Java RMI
-- Com (?)
+- Com
 
 :  allow function callers and function implementers to live in different processes
 : the client and the server in an RPC exchange must be up and running at the same time.
