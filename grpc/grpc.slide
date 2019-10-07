@@ -36,7 +36,6 @@ Examples of all the concepts described during this talk can be found at
 * The need for communication
 
 .image images/mailboxes.jpg 400 _
-: TODO Creative commons
 : demand for interoperability. In microservices, there is a push towards using different technology stacks
 : Mobile also introduced need for efficiency
 : not only Frontend / backend
