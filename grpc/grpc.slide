@@ -54,7 +54,7 @@ Examples of all the concepts described during this talk can be found at
 * What options do I have?
 
 - rest
-- other rpcs (thrift, avro)
+- other rpcs (thrift, twirp, avro)
 - websockets
 - framed tcp
 : rest is the king here. Not type safe. I know there are tools to generate the client /server but still
