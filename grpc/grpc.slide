@@ -20,6 +20,8 @@ fpaoline@redhat.com
 Examples of all the concepts described during this talk can be found at
 [[https://github.com/fedepaol/talks/tree/master/grpc/examples]]
 
+: don't come after me if you copy them and use them in prod :-)
+
 * Let's talk about RPC
 
 * Prior Art
