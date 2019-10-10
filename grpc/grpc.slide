@@ -75,8 +75,9 @@ Grpc introduces channels, rpcs and messages:
 
 .image images/grpc_on_http2_mapping_2.png 500 _
 
-: Many streams on a single connection. On each stream, many messages (binary format)
-: Advantage of a stream -> connection concurrency. Interleave messages on a single connection
+: Many streams on a single connection. On each stream, many frames (binary format)
+: Advantage of a stream -> connection concurrency. Interleave messages on a single connection if you want to access
+: different resources
 : in go channel renamed to client conn
 : channels enable multiple streams over multiple http2 connections (if load balance api is used)
 
